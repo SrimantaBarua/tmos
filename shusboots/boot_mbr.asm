@@ -339,32 +339,29 @@ part_0:
 	.chs_first:	times 3 db 0
 	.type:		db 0
 	.chs_last:	times 3 db 0
-	.lba_first:	times 4 db 0
-	.num_sectors:	times 4 db 0
+	.lba_first:	dd 0
+	.num_sectors:	dd 0
 part_1:
 	.status:	db 0
 	.chs_first:	times 3 db 0
 	.type:		db 0
 	.chs_last:	times 3 db 0
-	.lba_first:	times 4 db 0
-	.num_sectors:	times 4 db 0
+	.lba_first:	dd 0
+	.num_sectors:	dd 0
 part_2:
 	.status:	db 0
 	.chs_first:	times 3 db 0
 	.type:		db 0
 	.chs_last:	times 3 db 0
-	.lba_first:	times 4 db 0
-	.num_sectors:	times 4 db 0
+	.lba_first:	dd 0
+	.num_sectors:	dd 0
 part_3:
 	.status:	db 0
 	.chs_first:	times 3 db 0
 	.type:		db 0
 	.chs_last:	times 3 db 0
-	.lba_first:	times 4 db 0
-	.num_sectors:	times 4 db 0
-
-; Padding till the end of the file
-times 510 - ($ - $$) db 0
+	.lba_first:	dd 0
+	.num_sectors:	dd 0
 
 ; MBR signature
 dw 0xAA55
