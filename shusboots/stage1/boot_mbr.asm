@@ -291,12 +291,12 @@ main:
 	mov	si, msg_int13_ext_yes
 	call	print_16
 
-	; Load the next 2 sectors, which contain stage 1.5
+	; Load the next 3 sectors, which contain stage 1.5 and stage 2
 	mov	ax, 0x07e0
 	mov	es, ax
 	xor	di, di
 	mov	ax, 1
-	mov	cx, 2
+	mov	cx, 3
 	call	read_sectors_int13_ext
 	or	ax, ax
 	jz	.no_read_sectors
@@ -400,27 +400,6 @@ stage_1_5_start:
 	mov	ds, ax
 	mov	si, msg_mem_map_ok
 	call	print_16
-
-	; Read C code to 0x2000:0x0000 (0x20000)
-	mov	ax, 0x2000
-	mov	es, ax
-	xor	di, di
-	mov	ax, 2
-	mov	cx, word [c_code_sectors]
-	or	cx, cx
-	jz	.yes_read_sectors
-	call	read_sectors_int13_ext
-	or	ax, ax
-	jz	.no_read_sectors
-	jmp	.yes_read_sectors
-.no_read_sectors:
-	; Print message and halt
-	xor	ax, ax
-	mov	ds, ax
-	mov	si, msg_read_sectors_no
-	call	print_16
-	jmp	halt
-.yes_read_sectors:
 
 	; TODO: Get video modes
 
@@ -623,14 +602,9 @@ protected_mode_start:
 	in	al, 0x70
 	and	al, 0x7e
 	out	0x70, al
-	; Halt
-	jmp	halt_32
 
-; Halt for 32 bit code
-halt_32:
-	cli
-	hlt
-	jmp	halt_32
+	; Jump to Rust code
+	jmp	0x8200
 
 
 ; 32-bit GDT
@@ -659,8 +633,5 @@ gdtr32:
 .off:	dd gdt32
 
 
-; Padding till the last 2 bytes
-times 1534 - ($ - $$) db 0
-
-; Size of C code to load (number of sectors)
-c_code_sectors:	dw 0
+; Padding till the end
+times 1536 - ($ - $$) db 0
