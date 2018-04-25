@@ -122,8 +122,8 @@ check_int13_ext:
 ;     CX = number of sectors to read
 ;     AX = sector number. We won't be reading higher than this for some time
 ;     ES:DI = seg:off pointer to memory buffer
-; Returns -
-;     AX = 1 on success, 0 on failure
+; Returns - AX = 1 on success, 0 on failure
+; Clobbers - Flags
 read_sectors_int13_ext:
 	push	ds
 	push	si
@@ -382,7 +382,7 @@ stage_1_5_start:
 	; Read BIOS memory map to 0x1000:0x0000 (0x10000)
 	mov	ax, 0x1000
 	mov	es, ax
-	xor	di, di
+	mov	di, 8
 	call	int_15_e820_read_mmap
 	or	ax, ax
 	jnz	.mem_map_ok
@@ -392,13 +392,129 @@ stage_1_5_start:
 	call	print_16
 	jmp	halt
 .mem_map_ok:
+	; Store number of entries
+	mov	cx, 0x1000
+	mov	ds, cx
+	mov	word [ds:0], ax
+	mov	word [ds:2], 0
+	mov	word [ds:4], 0
+	mov	word [ds:6], 0
 	xor	ax, ax
 	mov	ds, ax
 	mov	si, msg_mem_map_ok
 	call	print_16
-	; Halt
-	jmp	halt
 
+	; Read C code to 0x2000:0x0000 (0x20000)
+	mov	ax, 0x2000
+	mov	es, ax
+	xor	di, di
+	mov	ax, 2
+	mov	cx, word [c_code_sectors]
+	or	cx, cx
+	jz	.yes_read_sectors
+	call	read_sectors_int13_ext
+	or	ax, ax
+	jz	.no_read_sectors
+	jmp	.yes_read_sectors
+.no_read_sectors:
+	; Print message and halt
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_read_sectors_no
+	call	print_16
+	jmp	halt
+.yes_read_sectors:
+
+	; TODO: Get video modes
+
+; Go to protected mode
+; For that, we need to -
+;  - Disable interrupts and NMI
+;  - Enable the A20 address line
+;  - Load a valid GDT
+;  - Set bit 0 in CR0
+;  - Jump to set new CS
+go_to_pmode:
+	cli
+	; Disable NMI
+.disable_nmi:
+	in	al, 0x70
+	or	al, 0x80
+	out	0x70, al
+	; Enable A20 address line
+	;call	a20_enable
+	or	al, al
+	jz	.no_a20
+	; Load valid GDT
+	lgdt	[gdtr32]
+	; Set bit 0 in CR0
+	mov	eax, cr0
+	or	al, 1
+	mov	cr0, eax
+	; Jump to pmode
+	jmp	0x08:.enable_nmi
+	; Enable NMI
+.enable_nmi:
+	in	al, 0x70
+	and	al, 0x7e
+	out	0x70, al
+	; Jump to official start of protected mode code
+	jmp	protected_mode_start
+.no_a20:
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_no_a20
+	call	print_16
+	jmp	halt
 
 msg_mem_map_err: db "[X] Mem map", 0x0A, 0x0D, 0x00
 msg_mem_map_ok:  db "[+] Mem map", 0x0A, 0x0D, 0x00
+msg_no_a20:      db "[X] A20 gate", 0x0A, 0x0D, 0x00
+
+
+;; ---------------- 32-BIT PROTECTED MODE -----------------
+
+[BITS 32]
+
+; Entry point of 32-bit code
+protected_mode_start:
+	jmp	halt_32
+
+; Halt for 32 bit code
+halt_32:
+	cli
+	hlt
+	jmp	halt_32
+
+
+; 32-bit GDT
+align 8
+gdt32:
+.null:	equ 0
+	dd	0, 0
+.code:	equ ($ - gdt32)
+	dw	0xffff		; Limit_low
+	dw	0		; Base_low
+	db	0		; Base mid
+	db	0x9a		; Access byte (Ring 0 code segment)
+	db	0xcf		; Flags | Limit_high
+	db	0		; Base_high
+.data:	equ ($ - gdt32)
+	dw	0xffff		; Limit_low
+	dw	0		; Base_low
+	db	0		; Base mid
+	db	0x92		; Access byte (Ring 0 data segment)
+	db	0xcf		; Flags | Limit_high
+	db	0		; Base_high
+
+; GDT register
+gdtr32:
+.size:	dw ($ - gdt32) - 1
+.off:	dd gdt32
+
+
+; Padding till the last 2 bytes
+times 1022 - ($ - $$) db 0
+
+; Size of C code to load (number of sectors)
+c_code_sectors:	dw 0
