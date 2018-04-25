@@ -291,12 +291,12 @@ main:
 	mov	si, msg_int13_ext_yes
 	call	print_16
 
-	; Load the next sector, which contains stage 1.5
+	; Load the next 2 sectors, which contain stage 1.5
 	mov	ax, 0x07e0
 	mov	es, ax
 	xor	di, di
 	mov	ax, 1
-	mov	cx, 1
+	mov	cx, 2
 	call	read_sectors_int13_ext
 	or	ax, ax
 	jz	.no_read_sectors
@@ -442,9 +442,13 @@ go_to_pmode:
 	or	al, 0x80
 	out	0x70, al
 	; Enable A20 address line
-	;call	a20_enable
+	call	a20_enable
 	or	al, al
 	jz	.no_a20
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_a20_ok
+	call	print_16
 	; Load valid GDT
 	lgdt	[gdtr32]
 	; Set bit 0 in CR0
@@ -452,14 +456,7 @@ go_to_pmode:
 	or	al, 1
 	mov	cr0, eax
 	; Jump to pmode
-	jmp	0x08:.enable_nmi
-	; Enable NMI
-.enable_nmi:
-	in	al, 0x70
-	and	al, 0x7e
-	out	0x70, al
-	; Jump to official start of protected mode code
-	jmp	protected_mode_start
+	jmp	0x08:protected_mode_start
 .no_a20:
 	xor	ax, ax
 	mov	ds, ax
@@ -467,9 +464,149 @@ go_to_pmode:
 	call	print_16
 	jmp	halt
 
+
+; Enable the A20 line. Some BIOSes enable this by default. Plus, not all methods work on all
+; BIOSes. So, the OS-Dev Wiki recommends that we go about this in the following order -
+; - Test is A20 line is enabled
+; - If no, try using the BIOS function
+; - Test is A20 line is enabled
+; - If no, try using the keyboard controller method
+; - Test is A20 line is enabled
+; - If no, try using the fast A20 method
+; - Test is A20 line is enabled
+; - If no, print error message and halt
+; All the code related to testing/enabling the A20 line has been modified from the OS-Dev Wiki
+; article on A20 line (https://wiki.osdev.org/A20_Line)
+a20_enable:
+	call	test_a20	; Check if already enabled
+	or	al, al
+	jnz	.done
+	call	a20_bios_int_15	; Try BIOS int 15h method
+	call	test_a20	; Check if enabled
+	or	al, al
+	jnz	.done
+	call	a20_keyboard	; Try keyboard controller method
+	call	test_a20	; Check if enabled
+	or	al, al
+	jnz	.done
+	call	a20_fast	; Try fast A20 method
+	call	test_a20	; Check if enabled
+.done:
+	ret
+
+; Enable A20 line using BIOS interrupt 0x15. The OS-Dev wiki recommends that we ignore the
+; return status
+a20_bios_int_15:
+	mov	ax, 0x2403	; Check for support
+	int	0x15
+	jc	.done
+	or	ah, ah
+	jnz	.done
+	mov	ax, 0x2402	; Get status
+	int	0x15
+	jc	.done
+	or	ah, ah
+	jnz	.done
+	cmp	al, 1		; Check if already activated
+	je	.done
+	mov	ax, 0x2401	; Activate A20 gate
+	int	0x15
+.done:
+	ret
+
+; Enable A20 using the keyboard controller chip (8042)
+; Port 0x64 is used to read the status register, or send a command to the controller
+; Port 0x60 is used to write to the input buffer, or read the output buffer
+a20_keyboard:
+	call	.wait_input	; Wait for input buffer to be emptied
+	mov	al, 0xad	; Disable keyboard
+	out	0x64, al
+
+	call	.wait_input	; Wait for input buffer to be emptied
+	mov	al, 0xd0	; Read output port
+	out	0x64, al
+
+	call	.wait_output	; Wait for output buffer to be filled
+	in	al, 0x60	; Read output buffer
+	push	ax
+
+	call	.wait_input	; Wait for input buffer to be emptied
+	mov	al, 0xd1	; Write output port
+	out	0x64, al
+
+	call	.wait_input	; Wait for input buffer to be emptied
+	pop	ax
+	or	al, 2		; Set bit 1 (enabled A20)
+	out	0x60, al	; Write output port
+
+	call	.wait_input	; Wait for input buffer to be emptied
+	mov	al, 0xae	; Enable keyboard
+	out	0x64, al
+
+	call	.wait_input	; Wait for input buffer to be emptied
+	ret
+
+.wait_input:
+	in	al, 0x64
+	test	al, 2
+	jnz	.wait_input
+	ret
+
+.wait_output:
+	in	al, 0x64
+	test	al, 1
+	jz	.wait_output
+	ret
+
+; Fast A20 gate. This is the riskiest method, since it might not be supported on many BIOSes,
+; and may do something weird. So it's the last one we'll try
+a20_fast:
+	in	al, 0x92
+	test	al, 2		; Check if A20 already enabled
+	jnz	.done
+	or	al, 2		; Enable A20
+	and	al, 0xfe	; Make sure bit 0 is clear, since it is used for fast reset
+	out	0x92, al
+.done:
+	ret
+
+; Test if the A20 line is enabled. Tries writing to the same memory accessed by wrapping around
+; the 1MB mark. If wraps around, A20 is not enabled
+; Writes to 0x500. This is [probably] going to be safe, since the only thing that could be here
+; is the stack, and our stack is far, far away
+; Returns - AX = 1 if enabled, AX = 0 if disabled.
+test_a20:
+	pushf
+	push	ds
+	push	es
+	push	di
+	push	si
+	xor	ax, ax
+	mov	es, ax		; ES = 0
+	not	ax
+	mov	ds, ax		; DS = 0xffff
+	mov	di, 0x500
+	mov	si, 0x510
+	mov	byte [es:di], 0x00
+	mov	byte [ds:si], 0xff
+	cmp	byte [es:di], 0xff
+	je	.no_a20
+	mov	ax, 1
+	jmp	.done
+.no_a20:
+	xor	ax, ax
+.done:
+	pop	si
+	pop	di
+	pop	es
+	pop	ds
+	popf
+	ret
+
 msg_mem_map_err: db "[X] Mem map", 0x0A, 0x0D, 0x00
 msg_mem_map_ok:  db "[+] Mem map", 0x0A, 0x0D, 0x00
 msg_no_a20:      db "[X] A20 gate", 0x0A, 0x0D, 0x00
+msg_a20_ok:      db "[+] A20 gate", 0x0A, 0x0D, 0x00
 
 
 ;; ---------------- 32-BIT PROTECTED MODE -----------------
@@ -478,6 +615,18 @@ msg_no_a20:      db "[X] A20 gate", 0x0A, 0x0D, 0x00
 
 ; Entry point of 32-bit code
 protected_mode_start:
+	; Set segment registers
+	mov	ax, 0x10
+	mov	ds, ax
+	mov	es, ax
+	mov	fs, ax
+	mov	gs, ax
+	; Enable NMI
+.enable_nmi:
+	in	al, 0x70
+	and	al, 0x7e
+	out	0x70, al
+	; Halt
 	jmp	halt_32
 
 ; Halt for 32 bit code
@@ -514,7 +663,7 @@ gdtr32:
 
 
 ; Padding till the last 2 bytes
-times 1022 - ($ - $$) db 0
+times 1534 - ($ - $$) db 0
 
 ; Size of C code to load (number of sectors)
 c_code_sectors:	dw 0
