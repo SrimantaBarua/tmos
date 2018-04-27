@@ -1,9 +1,0 @@
-[package]
-name = "stage2"
-version = "0.1.0"
-authors = ["Srimanta Barua <srimanta.barua1@gmail.com>"]
-
-[lib]
-crate_type = [ "staticlib" ]
-
-[dependencies]

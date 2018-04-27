@@ -603,8 +603,10 @@ protected_mode_start:
 	and	al, 0x7e
 	out	0x70, al
 
-	; Jump to Rust code
-	jmp	0x8200
+	; Halt
+	cli
+	hlt
+	jmp	$
 
 
 ; 32-bit GDT
