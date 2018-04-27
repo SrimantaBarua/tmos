@@ -603,10 +603,8 @@ protected_mode_start:
 	and	al, 0x7e
 	out	0x70, al
 
-	; Halt
-	cli
-	hlt
-	jmp	$
+	; Jump to C code
+	jmp	0x8200
 
 
 ; 32-bit GDT
