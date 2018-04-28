@@ -21,7 +21,6 @@ clean:
 
 purge: clean
 	rm -f $(disk_img)
-	make -C stage2 purge
 
 run: all
 	qemu-system-x86_64 $(disk_img)
