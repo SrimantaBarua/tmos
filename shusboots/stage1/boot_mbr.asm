@@ -43,6 +43,9 @@
 [BITS 16]
 
 
+LOAD_SECTORS: equ 22
+
+
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
 ; 0x0000:0x7c00 with a long jump
 start:
@@ -291,12 +294,12 @@ main:
 	mov	si, msg_int13_ext_yes
 	call	print_16
 
-	; Load the next 3 sectors, which contain stage 1.5 and stage 2
+	; Load the next LOAD_SECTORS sectors, which contain stage 1.5 and stage 2
 	mov	ax, 0x07e0
 	mov	es, ax
 	xor	di, di
 	mov	ax, 1
-	mov	cx, 3
+	mov	cx, LOAD_SECTORS
 	call	read_sectors_int13_ext
 	or	ax, ax
 	jz	.no_read_sectors
@@ -604,6 +607,7 @@ protected_mode_start:
 	out	0x70, al
 
 	; Jump to C code
+	mov	sp, 0x7c00
 	jmp	0x8200
 
 

@@ -2,23 +2,26 @@
 
 ARCH=i686
 CC=$(ARCH)-elf-gcc
-LD=$(ARCH)-elf-ld
+LD=$(ARCH)-elf-gcc
 
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
 	-Wno-long-long -Winline -Wuninitialized
 
-CFLAGS:=-Os -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -ffreestanding -masm=intel $(WARNINGS)
+OPT:=-O2
+
+CFLAGS:=-ffunction-sections -fdata-sections -mno-red-zone -mno-mmx -mno-sse -mno-sse2\
+	-ffreestanding -masm=intel $(WARNINGS) $(OPT)
 CPPFLAGS:=-Iinclude/
-LDFLAGS:=-nostdlib
-LIBS:=
+LDFLAGS:=-nostdlib -Wl,-gc-sections
+LIBS:=-lgcc
 
 LINKER_SCRIPT:=linker.ld
 
 stage_2:=stage2.bin
 stage_2_elf:=stage2.elf
 
-asm_objs:=entry.o
-c_objs:=main.o io/serial.o util/log.o
+asm_objs:=asm/entry.o
+c_objs:=main.o io/serial.o io/port_io.o util/log.o util/fmt.o util/fmtutil.o
 
 crti_obj:=crt/crti.o
 crtn_obj:=crt/crtn.o
@@ -35,7 +38,7 @@ $(stage_2): $(stage_2_elf)
 	objcopy -O binary $< $@
 
 $(stage_2_elf): $(crti_obj) $(asm_objs) $(c_objs) $(crtn_obj)
-	$(LD) -n -T $(LINKER_SCRIPT) -o $@ $(objs) $(LDFLAGS) $(LIBS) --gc-sections
+	$(LD) -n -T $(LINKER_SCRIPT) -o $@ $(objs) $(LDFLAGS) $(LIBS)
 
 clean:
 	rm -f $(stage_2) $(stage_2_elf) $(crti_obj) $(asm_objs) $(c_objs) $(crtn_obj)

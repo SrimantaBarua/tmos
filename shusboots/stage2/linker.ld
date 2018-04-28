@@ -9,15 +9,24 @@ SECTIONS {
 
 	.text : {
 		*(.text*);
+		*(.init*);
+		*(.fini*);
+	}
+
+	.rodata : {
+		*(.rodata*);
 	}
 
 	.data : {
-		*(.bss*);
-		*(COMMON);
-		*(.rodata*);
 		*(.data*);
 	}
 
+	.bss : {
+		*(.bss*);
+		*(COMMON);
+	}
+
 	/DISCARD/ : {
+		*(.comment*);
 	}
 }

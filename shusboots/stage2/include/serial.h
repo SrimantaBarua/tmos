@@ -20,4 +20,5 @@ void serial_init();
 void serial_write_byte(enum serial_port port, uint8_t byte);
 
 // Write a null-terminated string to the given serial port
-void serial_write_str(enum serial_port port, const char *str);
+//void serial_write_str(enum serial_port port, const char *str);
+void serial_write_str(const char *str);

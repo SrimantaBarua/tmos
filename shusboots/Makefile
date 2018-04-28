@@ -23,7 +23,7 @@ purge: clean
 	rm -f $(disk_img)
 
 run: all
-	qemu-system-x86_64 $(disk_img)
+	qemu-system-x86_64 $(disk_img) -serial file:serial.log
 
 stage_2:
 	make -C stage2
