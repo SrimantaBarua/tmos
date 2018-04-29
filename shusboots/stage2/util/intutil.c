@@ -2,7 +2,7 @@
 //
 // Utility functions for formatting
 
-#include <fmtutil.h>
+#include <intutil.h>
 
 static const char *_HEXTABLE = "0123456789abcdef";
 
@@ -72,4 +72,41 @@ char* ulltoa(uint64_t val, char *buf, uint64_t base) {
 	}
 	buf[buf_idx] = 0;
 	return buf;
+}
+
+int atoi(const char *s) {
+	int sign = 1, res = 0;
+	if (*s == '-') {
+		sign = -1;
+		s++;
+	}
+	while (*s) {
+		res = res * 10 + (int) (*s - '0');
+		s++;
+	}
+	return sign * res;
+}
+
+long atol(const char *s) {
+	long sign = 1, res = 0;
+	if (*s == '-') {
+		sign = -1;
+		s++;
+	}
+	while (*s) {
+		res = res * 10 + (long) (*s - '0');
+	}
+	return sign * res;
+}
+
+long long atoll(const char *s) {
+	long long sign = 1, res = 0;
+	if (*s == '-') {
+		sign = -1;
+		s++;
+	}
+	while (*s) {
+		res = res * 10 + (long long) (*s - '0');
+	}
+	return sign * res;
 }
