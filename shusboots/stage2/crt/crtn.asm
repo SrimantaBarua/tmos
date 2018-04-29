@@ -1,3 +1,5 @@
+;; (C) 2018 Srimanta Barua
+;;
 ;; C runtime
 ;; This file defines the end of the _init and _fini functions which
 ;; initialize and then shut down the C runtime. They are required for us

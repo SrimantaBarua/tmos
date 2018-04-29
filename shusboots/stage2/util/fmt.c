@@ -1,3 +1,5 @@
+// (C) 2018 Srimanta Barua
+//
 // Text formatting utility
 
 #include <fmt.h>

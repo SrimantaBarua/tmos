@@ -1,3 +1,5 @@
+// (C) 2018 Srimanta Barua
+//
 // Set up and carry out communication over serial connections
 
 #include <stdbool.h>

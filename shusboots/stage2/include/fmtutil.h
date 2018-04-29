@@ -1,3 +1,5 @@
+// (C) 2018 Srimanta Barua
+//
 // Utility functions for formatting, which could also be used elsewhere
 
 #pragma once

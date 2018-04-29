@@ -1,3 +1,5 @@
+// (C) 2018 Srimanta Barua
+//
 // Functionality for logging
 
 #include <log.h>
@@ -24,6 +26,14 @@ static const char* _log_type_str(enum log_type type) {
 void log (enum log_type type, const char *fmt, ...) {
 	va_list ap;
 	serial_write_str (_log_type_str (type));
+	va_start (ap, fmt);
+	fmt_write (serial_write_str, fmt, ap);
+	va_end (ap);
+}
+
+// Log message without type
+void __log_without_typ(const char *fmt, ...) {
+	va_list ap;
 	va_start (ap, fmt);
 	fmt_write (serial_write_str, fmt, ap);
 	va_end (ap);

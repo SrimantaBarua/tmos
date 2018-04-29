@@ -1,3 +1,5 @@
+// (C) 2018 Srimanta Barua
+//
 // Utility functions for formatting
 
 #include <fmtutil.h>

@@ -14,5 +14,6 @@ void main() {
 	log (LOG_INFO, "Test: %d\n", -2);
 	volatile uint32_t *ptr = 0xb8000;
 	*ptr = 0x0f4b0f4f;
+	PANIC ("Test panic: %d\n", 3);
 	__asm__ __volatile__ ("cli; hlt; jmp $" : : : );
 }

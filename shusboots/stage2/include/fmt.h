@@ -1,3 +1,5 @@
+// (C) 2018 Srimanta Barua
+//
 // Interface for text formatting
 
 #pragma once
