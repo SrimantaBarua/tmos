@@ -10,7 +10,7 @@ OPT:=-O2
 
 CFLAGS:=-ffunction-sections -fdata-sections -mno-red-zone -mno-mmx -mno-sse -mno-sse2\
 	-ffreestanding -masm=intel $(OPT) $(WARN)
-CPPFLAGS:=-Iinclude/
+CPPFLAGS:=-Iinclude/ -Iinclude/arch/$(ARCH)/
 LDFLAGS:=-nostdlib -Wl,-gc-sections
 LIBS:=-lgcc
 
