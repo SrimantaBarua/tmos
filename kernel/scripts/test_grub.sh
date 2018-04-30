@@ -16,4 +16,3 @@ EOF
 cp $kernel isodir/boot/
 grub-mkrescue -o $iso isodir -d /usr/lib/grub/i386-pc
 qemu-system-x86_64 $iso $serial_cmd -no-reboot
-rm -rf $iso isodir

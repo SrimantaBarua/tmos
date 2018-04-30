@@ -187,8 +187,13 @@ long_mode_init:
 	mov	es, ax
 	mov	fs, ax
 	mov	gs, ax
-	mov	rax, 0x2f592f412f4b2f4f
-	mov	[0xb8000], rax
+
+	; Jump to C kernel code
+	xor	rdi, rdi
+	mov	edi, ebx
+	extern	kinit_multiboot2
+	call	kinit_multiboot2
+
 	cli
 	hlt
 	jmp	$

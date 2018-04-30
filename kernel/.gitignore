@@ -2,3 +2,5 @@
 *.kernel
 *.bin
 *.log
+isodir
+*.iso
