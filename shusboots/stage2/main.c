@@ -12,8 +12,8 @@ void main() {
 	serial_init ();
 	// Log that we're starting up
 	log (LOG_INFO, "Shu's putting on her Boots..\n");
-	log (LOG_INFO, "Test: %d\n", -2);
-	mem_load_regions (0x10000, 0);
+	union region *regions = 0;
+	uint32_t num_regions = mem_load_regions (0x10000, &regions);
 
 	volatile uint32_t *ptr = 0xb8000;
 	*ptr = 0x2f4b2f4f;

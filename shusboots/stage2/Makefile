@@ -7,7 +7,7 @@ LD=$(ARCH)-elf-gcc
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
 	-Wno-long-long -Winline -Wuninitialized
 
-OPT:=-O2
+OPT:=-Os
 
 CFLAGS:=-ffunction-sections -fdata-sections -mno-red-zone -mno-mmx -mno-sse -mno-sse2\
 	-ffreestanding -masm=intel $(WARNINGS) $(OPT)

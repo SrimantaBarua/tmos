@@ -27,6 +27,6 @@ void __log_without_typ(const char *fmt, ...);
 
 #define ASSERT(x) { \
 	if (!(x)) { \
-		PANIC("Assertion failed: " #x); \
+		PANIC("Assertion failed: %s", #x); \
 	} \
 }
