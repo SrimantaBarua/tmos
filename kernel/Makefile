@@ -9,14 +9,14 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 OPT:=-O2
 
 CFLAGS:=-ffunction-sections -fdata-sections -mno-red-zone -mno-mmx -mno-sse -mno-sse2\
-	-ffreestanding -masm=intel $(OPT) $(WARN)
-CPPFLAGS:=-Iinclude/ -Iinclude/arch/$(ARCH)/
+	-ffreestanding -masm=intel -mcmodel=kernel $(OPT) $(WARN)
+CPPFLAGS:=-Iinclude/ -Iinclude/arch/$(ARCH)/ -D__ARCH_$(ARCH)__
 LDFLAGS:=-nostdlib -Wl,-gc-sections
 LIBS:=-lgcc
 
 KERNEL:=shuos.kernel
 
-SRC_OBJS:=
+SRC_OBJS:=klog.o ctype.o vsprintf.o string.o
 CRTBEGIN_OBJ:=$(shell $(CC) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) -print-file-name=crtend.o)
 

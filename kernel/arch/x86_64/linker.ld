@@ -26,12 +26,12 @@ SECTIONS {
 
 	.rodata : AT(ADDR(.rodata) - __kernel_vbase__) {
 		__rodata_start__ = .;
-		*(.rodata*);
+		*(.rodata*)
 		. = ALIGN(4K);
 		__rodata_end__ = .;
 	}
 
-	.data : AT(ADDR(.rodata) - __kernel_vbase__) {
+	.data : AT(ADDR(.data) - __kernel_vbase__) {
 		__data_start__ = .;
 		*(.data*);
 		. = ALIGN(4K);
@@ -49,6 +49,7 @@ SECTIONS {
 	__kernel_virt_end__ = .;
 
 	/DISCARD/ : {
+		*(.comment*)
 	}
 }
 
