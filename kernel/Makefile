@@ -1,16 +1,15 @@
 # Makefile for the shuos kernel
 
 ARCH?=x86_64
+OPT?=-O2
+
 CC:=$(ARCH)-elf-gcc
 
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
 	-Wno-long-long -Winline -Wuninitialized
 
-OPT:=-O2
-
-CFLAGS:=-ffunction-sections -fdata-sections -mno-red-zone -mno-mmx -mno-sse -mno-sse2\
-	-ffreestanding -masm=intel -mcmodel=kernel $(OPT) $(WARN)
-CPPFLAGS:=-Iinclude/ -Iinclude/arch/$(ARCH)/ -D__ARCH_$(ARCH)__
+CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARN)
+CPPFLAGS:=-Iinclude/ -D__ARCH_$(ARCH)__
 LDFLAGS:=-nostdlib -Wl,-gc-sections
 LIBS:=-lgcc
 
@@ -22,22 +21,27 @@ CRTEND_OBJ:=$(shell $(CC) -print-file-name=crtend.o)
 
 include arch/$(ARCH)/make.config
 
-SRC_OBJS+=$(ARCH_OBJS)
+CFLAGS+=$(ARCH_CFLAGS)
+CPPFLAGS+=$(ARCH_CPPFLAGS)
 LDFLAGS+=$(ARCH_LDFLAGS)
 LIBS+=$(ARCH_LIBS)
 
+SRC_OBJS+=$(ARCH_OBJS)
 BUILD_OBJS:=$(ARCH_CRTI_OBJ) $(SRC_OBJS) $(ARCH_CRTN_OBJ)
 TOTAL_OBJS:=$(ARCH_CRTI_OBJ) $(CRTBEGIN_OBJ) $(SRC_OBJS) $(CRTEND_OBJ) $(ARCH_CRTN_OBJ)
 
-.PHONY: all clean test_grub
+.PHONY: all clean test_grub purge
 
 all: $(KERNEL)
 
 clean:
-	rm -f $(KERNEL) $(BUILD_OBJS)
+	rm -rf $(KERNEL) $(BUILD_OBJS)
 
 test_grub: all
-	./scripts/test_grub.sh
+	./scripts/test_grub.sh run
+
+purge: clean
+	./scripts/test_grub.sh clean
 
 $(KERNEL): $(BUILD_OBJS)
 	@echo "  LD $@"

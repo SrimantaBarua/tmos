@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 #include <serial.h>
-#include <port_io.h>
+#include <arch/x86_64/port_io.h>
 
 // Registers
 #define DATA(base)         (base)
