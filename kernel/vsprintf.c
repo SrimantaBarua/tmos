@@ -29,7 +29,7 @@ static char* _number(char *buf, char *end, unsigned long long num,
 		     int base, int size, int precision, int flags) {
 	char c, sign, tmp[66];
 	const char *digits;
-	unsigned i;
+	int i;
 	static const char small_digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 	static const char large_digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	digits = (flags & LARGE) ? large_digits : small_digits;
@@ -66,6 +66,7 @@ static char* _number(char *buf, char *end, unsigned long long num,
 	} else {
 		while (num) {
 			tmp[i++] = digits[num % base];
+			num /= base;
 		}
 	}
 	if (i > precision) {
@@ -136,7 +137,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 	char *str, *end, c;
 	const char *fmt_begun_at, *s;
 	int flags, field_width, qualifier, precision, base, i;
-	size_t slen;
+	int slen;
 	unsigned long long num;
 	str = buf;
 	end = buf + size - 1;

@@ -80,7 +80,7 @@ static void _init_com(enum serial_port com_base, uint32_t baud_rate) {
 // Check if the transmit queue is empty
 static bool _is_transmit_empty(enum serial_port com_base) {
 	uint16_t port = com_base;
-	return (LINE_STATUS (port) & LINE_STATUS_TRANS_EMPTY) != 0;
+	return (inb (LINE_STATUS (port)) & LINE_STATUS_TRANS_EMPTY) != 0;
 }
 
 // Initialize the serial connection interface
@@ -97,9 +97,11 @@ void serial_write_byte(enum serial_port com_base, uint8_t byte) {
 
 // Write a string to the given serial port
 void serial_write_str(enum serial_port com_base, const char *str) {
-	unsigned i;
-	for (i = 0; str[i]; i++) {
-		serial_write_byte (com_base, str[i]);
+	if (str) {
+		while (*str) {
+			serial_write_byte (com_base, (uint8_t) *str);
+			str++;
+		}
 	}
 }
 

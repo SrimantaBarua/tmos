@@ -187,6 +187,7 @@ long_mode_init:
 	mov	es, ax
 	mov	fs, ax
 	mov	gs, ax
+	mov	ss, ax
 
 	; Jump to C kernel code
 	xor	rdi, rdi
