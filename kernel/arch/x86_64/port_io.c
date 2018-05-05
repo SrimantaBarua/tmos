@@ -2,7 +2,7 @@
 //
 // Port I/O from C
 
-#include <arch/x86_64/port_io.h>
+#include <stdint.h>
 
 // Read a byte in from a port
 uint8_t inb(uint16_t port) {
