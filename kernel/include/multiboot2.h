@@ -55,8 +55,8 @@ struct mb2_tag_mmap {
 struct mb2_mmap_region {
 	uint64_t start;
 	uint64_t len;
-	uint64_t type;
-	uint64_t _rsvd;
+	uint32_t type;
+	uint32_t _rsvd;
 };
 
 // ELF sections tag

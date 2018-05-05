@@ -11,3 +11,6 @@
 #if defined(__ARCH_x86_64__)
 #include <arch/x86_64/system.h>
 #endif
+
+#define PAGE_ALGN_UP(x) (((x) + (PAGE_SIZE - 1)) & !(PAGE_SIZE - 1))
+#define PAGE_ALGN_DOWN(x) ((x) & !(PAGE_SIZE - 1))
