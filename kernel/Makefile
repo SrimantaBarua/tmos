@@ -8,7 +8,7 @@ CC:=$(ARCH)-elf-gcc
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
 	-Wno-long-long -Winline -Wuninitialized
 
-CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARN)
+CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARN) -g
 CPPFLAGS:=-Iinclude/ -D__ARCH_$(ARCH)__
 LDFLAGS:=-nostdlib -Wl,-gc-sections
 LIBS:=-lgcc

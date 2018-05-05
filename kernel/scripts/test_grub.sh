@@ -22,7 +22,7 @@ menuentry "shuos" {
 EOF
 cp $kernel isodir/boot/
 grub-mkrescue -o $iso isodir -d /usr/lib/grub/i386-pc
-qemu-system-x86_64 $iso $serial_cmd -no-reboot
+qemu-system-x86_64 $iso $serial_cmd
 }
 
 function grub_clean() {
