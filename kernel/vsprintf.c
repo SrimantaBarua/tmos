@@ -2,7 +2,7 @@
 //
 // Writing formatted text to buffer
 
-#include <constants.h>
+#include <system.h>
 #include <vsprintf.h> 
 #include <ctype.h>
 #include <stdint.h>

@@ -43,10 +43,10 @@ SECTIONS {
 		*(.bss*);
 		. = ALIGN(4K);
 		__bss_end__ = .;
-	}
 
-	__kernel_phys_end__ = . - __kernel_vbase__;
-	__kernel_virt_end__ = .;
+		__kernel_phys_end__ = . - __kernel_vbase__;
+		__kernel_virt_end__ = .;
+	}
 
 	/DISCARD/ : {
 		*(.comment*)

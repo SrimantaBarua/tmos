@@ -16,6 +16,9 @@
 static char _log_buf[KLOG_BUF_SZ];
 
 // Write a log message
+// TODO: Revisit when enabling SMP. Needs better locking, and we should not write to serial
+// straightaway. Instead, we should have a local buffer, which we append to the global log buffer,
+// which is then flushed to the debug console when required.
 void klog (const char *fmt, ...) {
 	int vslen;
 	va_list ap;
@@ -42,6 +45,7 @@ void klog (const char *fmt, ...) {
 }
 
 // Kernel panic
+// TODO: Again, revisit for SMP. See comment before klog()
 void __panic(const char *file, unsigned line, const char *fn, const char *fmt, ...) {
 	int vslen;
 	va_list ap;
