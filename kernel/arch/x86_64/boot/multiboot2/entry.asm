@@ -191,6 +191,9 @@ long_mode_init:
 	mov	gs, ax
 	mov	ss, ax
 
+	; Load a more sensible kernel stack
+	mov	rsp, kernel_stack_top
+
 	; Jump to C kernel code
 	xor	rdi, rdi
 	mov	edi, ebx
@@ -201,3 +204,18 @@ long_mode_init:
 	cli
 	hlt
 	jmp	$
+
+
+section .bss
+
+align 4096
+
+; Guard page for the kernel stack
+global __guard_page__
+__guard_page__:
+	resb	0x1000
+
+global kernel_stack_bottom
+kernel_stack_bottom:
+	resb	0x4000		; 16 KB stack
+kernel_stack_top:
