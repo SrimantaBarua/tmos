@@ -15,7 +15,7 @@ LIBS:=-lgcc
 
 KERNEL:=shuos.kernel
 
-SRC_OBJS:=klog.o ctype.o vsprintf.o string.o
+SRC_OBJS:=klog.o ctype.o vsprintf.o string.o multiboot2.o
 CRTBEGIN_OBJ:=$(shell $(CC) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) -print-file-name=crtend.o)
 

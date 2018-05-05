@@ -8,6 +8,8 @@ global cpu_write_rflags
 global idt_disable_int
 global idt_enable_int
 
+global crash_and_burn
+
 ; Read the CPU's RFLAGS register
 ; Returns -> AX = value
 section .text.cpu_read_rflags
@@ -34,6 +36,12 @@ idt_disable_int:
 	cli
 	ret
 
+; Stop forever
+section .text.crash_and_burn
+crash_and_burn:
+	cli
+	hlt
+	jmp	crash_and_burn
 
 ; -------------------------------
 ; CPU Interrupt Service Routines
