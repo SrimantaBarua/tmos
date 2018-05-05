@@ -30,7 +30,7 @@ typedef uint64_t region_t;
 #define __REGION_TYPE_MASK       3
 
 // Load an array of memory regions from multiboot2 memory map, and return number of regions
-uint32_t mem_load_mb2_mmap(region_t **regions);
+uint32_t mem_load_mb2_mmap(region_t *regions, uint32_t max_regions);
 
 // Create a new region of the given type and start address. Start address is page aligned
 region_t region_new(uint64_t start_addr, uint8_t type);

@@ -73,146 +73,150 @@ static void _sort_mb2_map(struct mb2_mmap_region *mmap, uint32_t len) {
 
 // Translate the MB2 memory map into regions
 // TODO: Go through this again thoroughly and review. Especially the parts about page alignment
-static uint32_t _mb2_mmap_translate(struct mb2_mmap_region *mmap, uint32_t len, region_t **regions) {
-	if (!regions || len == 0) {
+// TODO: Also, reorder adding of new regions so that reglen check happens BEFORE adding a region
+static uint32_t _mb2_mmap_translate(struct mb2_mmap_region *mmap, uint32_t len, region_t *region, uint32_t max_regions) {
+#define INC_REGLEN \
+	if (reglen++ >= max_regions) { \
+		PANIC ("Too many memory regions: %u (Max: %u)\n", reglen, max_regions); \
+	}
+	if (!region || len == 0) {
 		return 0;
 	}
 	uint32_t reglen = 0, i;
 	uint64_t last_start = PADDR_MASK + 1, last_end;
-	region_t *tmp_region = (region_t *) &mmap[len];
 	for (i = 0; i < len; i++) {
 		if (PAGE_ALGN_UP (MB2_MREG_END (mmap[i])) < last_start) {
-			if (reglen > 0 && REGION_TYPE (tmp_region[reglen - 1]) == REGION_TYPE_RSVD) {
-				REGION_SET_START (tmp_region[reglen - 1], MB2_MREG_END (mmap[i]));
-				last_start = REGION_START (tmp_region[reglen - 1]);
+			if (reglen > 0 && REGION_TYPE (region[reglen - 1]) == REGION_TYPE_RSVD) {
+				REGION_SET_START (region[reglen - 1], MB2_MREG_END (mmap[i]));
+				last_start = REGION_START (region[reglen - 1]);
 			} else {
-				tmp_region[reglen] = region_new (MB2_MREG_END (mmap[i]), REGION_TYPE_RSVD);
-				last_start = REGION_START (tmp_region[reglen]);
-				reglen++;
+				region[reglen] = region_new (MB2_MREG_END (mmap[i]), REGION_TYPE_RSVD);
+				last_start = REGION_START (region[reglen]);
+				INC_REGLEN;
 			}
 		}
-		if (reglen > 0 && REGION_TYPE (tmp_region[reglen - 1]) == MB2_MREG_TYPE (mmap[i]) - 1) {
+		if (reglen > 0 && REGION_TYPE (region[reglen - 1]) == MB2_MREG_TYPE (mmap[i]) - 1) {
 			if (mmap[i].start >= last_start) {
 				continue;
 			}
-			REGION_SET_START (tmp_region[reglen - 1], mmap[i].start);
-			last_start = REGION_START (tmp_region[reglen -  1]);
+			REGION_SET_START (region[reglen - 1], mmap[i].start);
+			last_start = REGION_START (region[reglen -  1]);
 			continue;
 		}
 		if (PAGE_ALGN_DOWN (MB2_MREG_END (mmap[i])) > last_start) {
 			// Overlap
 			ASSERT (reglen != 0); // We don't handle that memory is upto LAST_START
 			if (reglen > 1) {
-				last_end = REGION_START (tmp_region[reglen - 2]);
+				last_end = REGION_START (region[reglen - 2]);
 			} else {
 				last_end = PADDR_MASK + 1;
 			}
-			switch (REGION_TYPE (tmp_region[reglen - 1])) {
+			switch (REGION_TYPE (region[reglen - 1])) {
 			case 0:
 				if (mmap[i].start <= last_start) {
 					if (MB2_MREG_END (mmap[i]) == last_end) {
-						tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+						region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
 						break;
 					}
-					REGION_SET_START (tmp_region[reglen - 1], MB2_MREG_END (mmap[i]));
-					tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					REGION_SET_START (region[reglen - 1], MB2_MREG_END (mmap[i]));
+					region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 					break;
 				}
 				if (MB2_MREG_END (mmap[i]) == last_end) {
-					tmp_region[reglen] = region_new (REGION_START (tmp_region[reglen - 1]), 0);
-					tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					region[reglen] = region_new (REGION_START (region[reglen - 1]), 0);
+					region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 					break;
 				}
-				reglen++;
-				tmp_region[reglen] = region_new (REGION_START (tmp_region[reglen - 2]), 0);
-				tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-				REGION_SET_START (tmp_region[reglen - 2], MB2_MREG_END (mmap[i]));
-				reglen++;
+				INC_REGLEN;
+				region[reglen] = region_new (REGION_START (region[reglen - 2]), 0);
+				region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+				REGION_SET_START (region[reglen - 2], MB2_MREG_END (mmap[i]));
+				INC_REGLEN;
 				break;
 			case 1:
 				if (mmap[i].start < last_start) {
-					tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 				}
 				break;
 			case 2:
 				if (MB2_MREG_TYPE (mmap[i]) == 1) {
 					if (mmap[i].start < last_start) {
-						tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-						reglen++;
+						region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+						INC_REGLEN;
 					}
 					break;
 				}
 				if (mmap[i].start <= last_start) {
 					if (MB2_MREG_END (mmap[i]) == last_end) {
-						tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+						region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
 						break;
 					}
-					REGION_SET_START (tmp_region[reglen - 1], MB2_MREG_END (mmap[i]));
-					tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					REGION_SET_START (region[reglen - 1], MB2_MREG_END (mmap[i]));
+					region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 					break;
 				}
 				if (MB2_MREG_END (mmap[i]) == last_end) {
-					tmp_region[reglen] = region_new (REGION_START (tmp_region[reglen - 1]), 2);
-					tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					region[reglen] = region_new (REGION_START (region[reglen - 1]), 2);
+					region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 					break;
 				}
-				reglen++;
-				tmp_region[reglen] = region_new (REGION_START (tmp_region[reglen - 2]), 2);
-				tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-				REGION_SET_START (tmp_region[reglen - 2], MB2_MREG_END (mmap[i]));
-				reglen++;
+				INC_REGLEN;
+				region[reglen] = region_new (REGION_START (region[reglen - 2]), 2);
+				region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+				REGION_SET_START (region[reglen - 2], MB2_MREG_END (mmap[i]));
+				INC_REGLEN;
 				break;
 			case 3:
 				if (MB2_MREG_TYPE (mmap[i]) != 2) {
 					if (mmap[i].start < last_start) {
-						tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-						reglen++;
+						region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+						INC_REGLEN;
 					}
 					break;
 				}
 				if (mmap[i].start <= last_start) {
 					if (MB2_MREG_END (mmap[i]) == last_end) {
-						tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+						region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
 						break;
 					}
-					REGION_SET_START (tmp_region[reglen - 1], MB2_MREG_END (mmap[i]));
-					tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					REGION_SET_START (region[reglen - 1], MB2_MREG_END (mmap[i]));
+					region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 					break;
 				}
 				if (MB2_MREG_END (mmap[i]) == last_end) {
-					tmp_region[reglen] = region_new (REGION_START (tmp_region[reglen - 1]), 3);
-					tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-					reglen++;
+					region[reglen] = region_new (REGION_START (region[reglen - 1]), 3);
+					region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+					INC_REGLEN;
 					break;
 				}
-				reglen++;
-				tmp_region[reglen] = region_new (REGION_START (tmp_region[reglen - 2]), 3);
-				tmp_region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-				REGION_SET_START (tmp_region[reglen - 2], MB2_MREG_END (mmap[i]));
-				reglen++;
+				INC_REGLEN;
+				region[reglen] = region_new (REGION_START (region[reglen - 2]), 3);
+				region[reglen - 1] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+				REGION_SET_START (region[reglen - 2], MB2_MREG_END (mmap[i]));
+				INC_REGLEN;
 			}
 			continue;
 		}
-		tmp_region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
-		last_start = REGION_START (tmp_region[reglen]);
-		reglen++;
+		region[reglen] = region_new (mmap[i].start, MB2_MREG_TYPE (mmap[i]) - 1);
+		last_start = REGION_START (region[reglen]);
+		INC_REGLEN;
 	}
 	klog ("REGIONS (%u): [\n", reglen);
 	for (i = 0; i < reglen; i++) {
-		klog ("\t{ B: 0x%08llx | T: %d }\n", REGION_START (tmp_region[i]), REGION_TYPE (tmp_region[i]));
+		klog ("\t{ B: 0x%08llx | T: %d }\n", REGION_START (region[i]), REGION_TYPE (region[i]));
 	}
 	klog ("]\n");
 	return reglen;
 }
 
 // Load an array of memory regions from addr of MB2 memory map, and return number of regions
-uint32_t mem_load_mb2_mmap(region_t **regions) {
+uint32_t mem_load_mb2_mmap(region_t *regions, uint32_t max_regions) {
 	const struct mb2_tag_mmap *tag;
 	struct mb2_mmap_region *mb2_mmap;
 	uint32_t mb2_mmap_len, i;
@@ -235,7 +239,7 @@ uint32_t mem_load_mb2_mmap(region_t **regions) {
 	klog ("]\n");
 
 	// Translate the map into regions
-	return _mb2_mmap_translate (mb2_mmap, mb2_mmap_len, regions);
+	return _mb2_mmap_translate (mb2_mmap, mb2_mmap_len, regions, max_regions);
 }
 
 // Create a new region of the given type and start address. Start address is page aligned

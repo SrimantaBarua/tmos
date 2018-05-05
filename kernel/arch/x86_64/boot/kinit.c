@@ -24,8 +24,8 @@ void kinit_multiboot2(vaddr_t pointer) {
 	}
 
 	// Parse multiboot2 memory map into our own memory map
-	region_t *mem_regions;
-	mem_load_mb2_mmap (&mem_regions);
+	region_t mem_regions[16];
+	mem_load_mb2_mmap (mem_regions, 16);
 
 	// Initialize and enable interrupts
 	idt_init ();
