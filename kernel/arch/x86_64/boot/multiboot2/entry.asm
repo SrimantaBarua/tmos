@@ -151,7 +151,7 @@ enable_paging:
 	mov	cr0, eax
 	ret
 
-; 64-bit GDT
+; Temporary 64-bit GDT
 gdt64:
     .null: equ ($ - gdt64)			; NULL descriptor
 	dq 0
@@ -165,6 +165,7 @@ gdtr64:
 	.limit:	dw ($ - gdt64) - 1
 	.base:  dq gdt64
 
+; Temporary page tables
 align 4096
 pml4:
 	times 4096 db 0
@@ -182,6 +183,7 @@ pdp1:
 section .bootstrap.x86_64
 
 long_mode_init:
+	; Set segment registers
 	mov	ax, gdt64.data
 	mov	ds, ax
 	mov	es, ax
@@ -195,6 +197,7 @@ long_mode_init:
 	extern	kinit_multiboot2
 	call	kinit_multiboot2
 
+	; We ideally will never get here
 	cli
 	hlt
 	jmp	$

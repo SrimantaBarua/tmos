@@ -12,5 +12,6 @@
 #include <arch/x86_64/system.h>
 #endif
 
+// Page-alignment macros
 #define PAGE_ALGN_UP(x) (((x) + (PAGE_SIZE - 1)) & !(PAGE_SIZE - 1))
 #define PAGE_ALGN_DOWN(x) ((x) & !(PAGE_SIZE - 1))

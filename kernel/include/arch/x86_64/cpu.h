@@ -1,4 +1,6 @@
 // (C) 2018 Srimanta Barua
+//
+// Structures and instructions specific to the x86_64 CPU
 
 #pragma once
 

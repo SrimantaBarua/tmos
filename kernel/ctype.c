@@ -1,4 +1,6 @@
 // (C) 2018 Srimanta Barua
+// Internal details of the kernel's ctype implementation. We just index into this array and
+// test bits
 
 #include <ctype.h>
 

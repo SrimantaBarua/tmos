@@ -1,4 +1,6 @@
 // (C) 2018 Srimanta Barua
+//
+// Test for character types
 
 #pragma once
 
