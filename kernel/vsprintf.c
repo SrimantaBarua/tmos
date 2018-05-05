@@ -29,7 +29,7 @@ static char* _number(char *buf, char *end, unsigned long long num,
 		     int base, int size, int precision, int flags) {
 	char c, sign, tmp[66];
 	const char *digits;
-	int i;
+	int i = 0;
 	static const char small_digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 	static const char large_digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	digits = (flags & LARGE) ? large_digits : small_digits;

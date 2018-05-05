@@ -16,6 +16,7 @@ section .text.cpu_read_rflags
 cpu_read_rflags:
 	pushfq
 	pop	rax
+	ret
 
 ; Write the CPU's RFLAGS register
 ; Params -> RDI = value to write
@@ -23,6 +24,7 @@ section .text.cpu_write_rflags
 cpu_write_rflags:
 	push	rdi
 	popfq
+	ret
 
 ; Enable interrupts
 section .text.idt_enable_int
