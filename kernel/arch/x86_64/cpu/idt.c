@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <system.h>
 #include <arch/x86_64/idt.h>
 #include <klog.h>
 
@@ -147,8 +148,5 @@ void isr_common_c_handler(const struct int_regs *regs) {
 	klog ("Interrupt: (%s)\n"
 	      "CS: %#04x, RIP: %#016x, SS: %#04x, RSP: %#016x, Error: %#x\n",
 	      str, regs->cs, regs->rip, regs->ss, regs->rsp, regs->err_code);
-	while (1) {
-		__asm__ __volatile__ ("1: cli; hlt; jmp 1" : : : "memory" );
-	}
-	__builtin_unreachable ();
+	crash_and_burn ();
 }

@@ -22,6 +22,8 @@ void kinit_multiboot2(uint64_t pointer) {
 	// Log that we are booted
 	klog ("Booting ShuOS..\n");
 
+	ASSERT (1 == 2);
+
 	// Generate fake interrupt
 	__asm__ __volatile__ ("int 5" : : : );
 

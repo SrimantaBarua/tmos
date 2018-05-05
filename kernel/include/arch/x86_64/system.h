@@ -13,3 +13,7 @@
 
 // Enable interrupts
 #define sys_enable_int() idt_enable_int ()
+
+// Die
+#define crash_and_burn() \
+	__asm__ __volatile__ ("1: cli; hlt; jmp 1" : : : "memory");

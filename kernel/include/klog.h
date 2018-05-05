@@ -4,13 +4,6 @@
 
 #pragma once
 
-// Kernel log type. This is a bit like linux 1.0's system
-#define KLOG_CRIT  "<1>"  // Critical condition
-#define KLOG_ERR   "<2>"  // Error
-#define KLOG_WARN  "<3>"  // Warning
-#define KLOG_INFO  "<4>"  // Information
-#define KLOG_DEBUG "<5>"  // Debug messages
-
 // Write a log message
 void klog(const char *fmt, ...);
 
@@ -21,7 +14,7 @@ void __panic(const char *file, unsigned line, const char *fn, const char *fmt, .
 
 #define ASSERT(x) { \
 	if (!(x)) { \
-		PANIC("Assertion failed: %s", #x); \
+		PANIC("Assertion failed: %s\n", #x); \
 	} \
 }
 
