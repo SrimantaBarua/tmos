@@ -23,23 +23,27 @@
 typedef uint64_t region_t;
 
 // Type of memory region
-#define REGION_TYPE_AVAIL        0
-#define REGION_TYPE_RSVD         1
-#define REGION_TYPE_ACPI_RECLAIM 2
-#define REGION_TYPE_ACPI_NVS     3
-#define __REGION_TYPE_MASK       3
+#define REGION_TYPE_NONE         0
+#define REGION_TYPE_AVAIL        1
+#define REGION_TYPE_MULTIBOOT2   2
+#define REGION_TYPE_KERNEL       3
+#define REGION_TYPE_ACPI_RECLAIM 4
+#define REGION_TYPE_ACPI_NVS     5
+#define REGION_TYPE_RSVD         6
+#define __REGION_TYPE_MASK       7
 
-// Load an array of memory regions from multiboot2 memory map, and return number of regions
-uint32_t mem_load_mb2_mmap(region_t *regions, uint32_t max_regions);
-
-// Create a new region of the given type and start address. Start address is page aligned
-region_t region_new(uint64_t start_addr, uint8_t type);
+// Region flags
+#define __REGION_FLAG_SHIFT  3
+#define REGION_FLAG_MANAGED  (1 << __REGION_FLAG_SHIFT)
 
 // Get start address of region
 #define REGION_START(r) ((r) & PADDR_ALGN_MASK)
 
 // Get type of region
 #define REGION_TYPE(r) ((r) & __REGION_TYPE_MASK)
+
+// Return a new region with given start address and type
+#define REGION_NEW(addr, typ) (((uint64_t) addr & PADDR_ALGN_MASK) | ((uint64_t) typ & __REGION_TYPE_MASK))
 
 // Set the start address of the region
 #define REGION_SET_START(r, addr) {                                \
@@ -50,3 +54,32 @@ region_t region_new(uint64_t start_addr, uint8_t type);
 #define REGION_SET_TYPE(r, type) {                                       \
 	(r) = ((r) & PADDR_ALGN_MASK) | (type & __REGION_TYPE_MASK); \
 }
+
+// Set a region as managed
+#define REGION_SET_MANAGED(r) { \
+	(r) |= REGION_FLAG_MANAGED; \
+}
+
+// Set a region as unmanaged
+#define REGION_SET_UNMANAGED(r) { \
+	(r) &= ~REGION_FLAG_MANAGED; \
+}
+
+// A memory map made up of an array of our regions, and the number of regions
+// Hopefully we won't have more than 128 regions...
+
+#define MMAP_MAX_NUM_ENTRIES 128
+
+struct mmap {
+	region_t r[MMAP_MAX_NUM_ENTRIES];
+};
+
+// Load an array of memory regions from multiboot2 memory map, and return number of regions
+void mem_load_mb2_mmap(struct mmap *map);
+
+// Insert a region into a memory map
+void mmap_insert_region(struct mmap *map, uint64_t start_addr, uint64_t end, uint32_t type);
+
+// Split a memory map at the given address. Splits any regions covering the address into two new
+// regions.
+void mmap_split_at(struct mmap *map, uint64_t addr);

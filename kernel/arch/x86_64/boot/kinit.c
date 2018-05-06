@@ -10,6 +10,9 @@
 #include <klog.h>
 #include <arch/x86_64/idt.h>
 
+// The kernel's memory map
+static struct mmap _KMMAP = { 0 };
+
 // This is called if the system is booted by a multiboot2-compliant
 // bootloader. Perform initialization and set up state to the point where we can hand off to
 // common kernel code
@@ -24,8 +27,7 @@ void kinit_multiboot2(vaddr_t pointer) {
 	}
 
 	// Parse multiboot2 memory map into our own memory map
-	region_t mem_regions[16];
-	mem_load_mb2_mmap (mem_regions, 16);
+	mem_load_mb2_mmap (&_KMMAP);
 
 	// Initialize and enable interrupts
 	idt_init ();

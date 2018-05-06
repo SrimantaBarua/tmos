@@ -22,7 +22,7 @@ LIBS:=-lgcc
 KERNEL:=shuos.kernel
 
 # Objects which will be linked to make the kernel binary
-SRC_OBJS:=klog.o ctype.o vsprintf.o string.o multiboot2.o
+SRC_OBJS:=klog.o ctype.o vsprintf.o string.o multiboot2.o memory.o
 CRTBEGIN_OBJ:=$(shell $(CC) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) -print-file-name=crtend.o)
 
