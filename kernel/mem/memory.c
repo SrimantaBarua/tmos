@@ -46,12 +46,32 @@ static void _move_right(struct mmap *map, uint64_t idx, uint64_t amt) {
 
 // Move the map left. Panics if amt > idx. Basically, map[idx..] -> map[(idx - amt)...]
 static void _move_left(struct mmap *map, uint64_t idx, uint64_t amt) {
-	uint64_t len = 0, i;
 	ASSERT (amt <= idx);
-	for (i = idx; REGION_START (map->r[i]); i++);
-	len = i + 1 - idx;
-	for (i = idx + len; len; i--, len--) {
-		map->r[i - 1] = map->r[i + amt - 1];
+	do {
+		map->r[idx] = map->r[idx + amt];
+		idx++;
+	} while (REGION_START (map->r[idx + amt - 1]));
+}
+
+// String representation for memory type (for debugging purposes)
+const char* _regtype_str(uint32_t type) {
+	switch (type) {
+	case REGION_TYPE_NONE:
+		return "None";
+	case REGION_TYPE_AVAIL:
+		return "Available";
+	case REGION_TYPE_MULTIBOOT2:
+		return "Multiboot2 Table";
+	case REGION_TYPE_KERNEL:
+		return "Kernel";
+	case REGION_TYPE_ACPI_RECLAIM:
+		return "ACPI Reclaimable";
+	case REGION_TYPE_ACPI_NVS:
+		return "ACPI Non Volatile";
+	case REGION_TYPE_RSVD:
+		return "Reserved";
+	default:
+		return "<Unknown>";
 	}
 }
 
@@ -63,6 +83,7 @@ void mmap_insert_region(struct mmap *map, uint64_t start, uint64_t end, uint32_t
 	if (start == end) {
 		return;
 	}
+	ASSERT (map);
 	ASSERT (!(start & ~PADDR_ALGN_MASK) && !(end & ~PADDR_ALGN_MASK));
 	_find_idx (map, start, end, &endidx, &startidx);
 	// As long as we're spread across many regions
@@ -104,7 +125,6 @@ void mmap_insert_region(struct mmap *map, uint64_t start, uint64_t end, uint32_t
 			return;
 		}
 		_move_right (map, startidx, 1);
-		map->r[startidx + 1] = map->r[startidx];
 		map->r[startidx] = REGION_NEW (start, type);
 		return;
 	}
@@ -115,11 +135,41 @@ void mmap_insert_region(struct mmap *map, uint64_t start, uint64_t end, uint32_t
 		return;
 	}
 	_move_right (map, startidx, 2);
-	map->r[startidx + 2] = map->r[startidx];
 	map->r[startidx + 1] = REGION_NEW (start,  type);
 	REGION_SET_START (map->r[startidx], end);
 }
 
 // Split a memory map at the given address. Splits any regions covering the address into two new
 // regions.
-void mmap_split_at(struct mmap *map, uint64_t addr);
+void mmap_split_at(struct mmap *map, uint64_t addr) {
+	uint64_t i;
+	ASSERT (map);
+	ASSERT (addr <= PADDR_ALGN_MASK);
+	ASSERT (!(addr & ~PADDR_ALGN_MASK));
+	for (i = 0; i < MMAP_MAX_NUM_ENTRIES; i++) {
+		if (REGION_START (map->r[i]) == addr) {
+			return;
+		}
+		if (REGION_START (map->r[i]) > addr) {
+			continue;
+		}
+		_move_right (map, i, 1);
+		REGION_SET_START (map->r[i], addr);
+		return;
+	}
+	PANIC ("unreachable");
+}
+
+// Print the memory map
+void mmap_print(const struct mmap *map) {
+	uint32_t i;
+	klog ("REGIONS:\n");
+	for (i = 0; REGION_START (map->r[i]); i++) {
+		klog ("  B: %#16llx | T: %s\n",
+		      REGION_START (map->r[i]),
+		      _regtype_str (REGION_TYPE (map->r[i])));
+	}
+	klog ("  B: %#16llx | T: %s\n",
+	      REGION_START (map->r[i]),
+	      _regtype_str (REGION_TYPE (map->r[i])));
+}

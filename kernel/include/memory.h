@@ -83,3 +83,6 @@ void mmap_insert_region(struct mmap *map, uint64_t start_addr, uint64_t end, uin
 // Split a memory map at the given address. Splits any regions covering the address into two new
 // regions.
 void mmap_split_at(struct mmap *map, uint64_t addr);
+
+// Print the memory map
+void mmap_print(const struct mmap *map);

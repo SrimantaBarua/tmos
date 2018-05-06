@@ -73,16 +73,6 @@ static void _fill_mmap(struct mb2_mmap_region *mb2, uint32_t mb2_len, struct mma
 		}
 		mmap_insert_region (regmap, start, end, type);
 	}
-	klog ("REGIONS: [\n");
-	for (i = 0; REGION_START (regmap->r[i]); i++) {
-		klog ("\t{ B: 0x%08llx | T: %d }\n",
-		      REGION_START (regmap->r[i]),
-		      REGION_TYPE (regmap->r[i]));
-	}
-	klog ("\t{ B: 0x%08llx | T: %d }\n",
-	      REGION_START (regmap->r[i]),
-	      REGION_TYPE (regmap->r[i]));
-	klog ("]\n");
 }
 
 // Load an array of memory regions from addr of MB2 memory map, and return number of regions
@@ -90,6 +80,9 @@ void mem_load_mb2_mmap(struct mmap *regmap) {
 	const struct mb2_tag_mmap *tag;
 	struct mb2_mmap_region *mb2_mmap;
 	uint32_t mb2_mmap_len, i;
+	uint64_t mb2tab_addr = (uint64_t) MB2TAB;
+
+	ASSERT (regmap);
 
 	if (!(tag = (const struct mb2_tag_mmap*) mb2_get_tag (MB2_TAG_TYPE_MMAP))) {
 		PANIC ("BIOS memory map tag not found\n");
@@ -110,4 +103,8 @@ void mem_load_mb2_mmap(struct mmap *regmap) {
 
 	// Fill the mmap with mb2_mmap
 	_fill_mmap (mb2_mmap, mb2_mmap_len, regmap);
+
+	// Mark region for multiboot2 table
+	mmap_insert_region (regmap, PAGE_ALGN_DOWN (mb2tab_addr),
+			PAGE_ALGN_UP (mb2tab_addr + MB2TAB->size), REGION_TYPE_MULTIBOOT2);
 }
