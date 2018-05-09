@@ -33,13 +33,11 @@ void kinit_multiboot2(vaddr_t pointer) {
 	// Mark region for kernel
 	mmap_insert_region (&_KMMAP, PAGE_ALGN_DOWN (KRNL_PHYS_START),
 			PAGE_ALGN_UP (KRNL_PHYS_END), REGION_TYPE_KERNEL);
-	// Split at 16MB mark, with low memory for DMA allocator
-	mmap_split_at (&_KMMAP, 0x1000000);
 
 	// Print memory map
 	mmap_print (&_KMMAP);
 
-	// Initialize low memory allocator
+	// Initialize memory allocator
 	for (tot = 0; tot < MMAP_MAX_NUM_ENTRIES; tot++) {
 		if (REGION_TYPE (_KMMAP.r[tot]) == REGION_TYPE_AVAIL && first == UINT32_MAX) {
 			first = tot - 1;
@@ -48,17 +46,15 @@ void kinit_multiboot2(vaddr_t pointer) {
 			tot++;
 			break;
 		}
-		if (REGION_START (_KMMAP.r[tot]) == 0x1000000) {
-			i = tot;
-		}
 	}
+	BM_PMMGR.init (&_KMMAP.r[first], tot, 0x1000000, PADDR_ALGN_MASK);
 
-	BM_PMMGR.init (&_KMMAP.r[first], i + 1 - first);
+	// Alloc test
 	for (i = 0; i < 10; i++) {
 		klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
 	}
-	BM_PMMGR.free (0x3000);
-	klog ("free(0x3000)\nalloc() -> 0x%p\n", BM_PMMGR.alloc ());
+	BM_PMMGR.free (0x1003000);
+	klog ("free(0x1003000)\nalloc() -> 0x%p\n", BM_PMMGR.alloc ());
 	klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
 
 	// Initialize and enable interrupts

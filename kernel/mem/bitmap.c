@@ -8,78 +8,81 @@
 
 // Bitmap-based physical memory manager
 struct bm_pmmgr {
-	paddr_t base, mem_sz, tot_blk, used_blk;
+	paddr_t base, mem_sz, tot_blk, used_blk, fast_start, fast_end;
 	struct bitmap bm0, bm1;
 };
 
-static struct bm_pmmgr _fast_mgr = { 0 }, _spl_mgr = { 0 };
+static struct bm_pmmgr _mgr = { 0 };
 
 // Set a bit in memory manager's bitmap, and also upper level bitmap if required
-static void _set(struct bm_pmmgr *mgr, paddr_t bit) {
-	BM_SET (mgr->bm0, bit);
+static void _set(paddr_t bit) {
+	BM_SET (_mgr.bm0, bit);
 	bit >>= WORD_SIZE_SHIFT;
-	if (mgr->bm0.map[bit] == WORD_MAX) {
-		BM_SET (mgr->bm1, bit);
+	if (_mgr.bm0.map[bit] == WORD_MAX) {
+		BM_SET (_mgr.bm1, bit);
 	}
 }
 
 // Unet a bit in memory manager's bitmap, and also upper level bitmap if required
-static void _unset(struct bm_pmmgr *mgr, paddr_t bit) {
-	BM_UNSET (mgr->bm0, bit);
+static void _unset(paddr_t bit) {
+	BM_UNSET (_mgr.bm0, bit);
 	bit >>= WORD_SIZE_SHIFT;
-	if (mgr->bm0.map[bit] == 0) {
-		BM_UNSET (mgr->bm1, bit);
+	if (_mgr.bm0.map[bit] == 0) {
+		BM_UNSET (_mgr.bm1, bit);
 	}
 }
 
 // Mark memory as used
-static void _mark_used(struct bm_pmmgr *mgr, paddr_t start, paddr_t end) {
-	ASSERT (start >= mgr->base);
-	start = (start - mgr->base) >> PAGE_SIZE_SHIFT;
-	end = (end - mgr->base) >> PAGE_SIZE_SHIFT;
-	ASSERT (end <= mgr->tot_blk);
+static void _mark_used(paddr_t start, paddr_t end) {
+	ASSERT (start >= _mgr.base);
+	start = (start - _mgr.base) >> PAGE_SIZE_SHIFT;
+	end = (end - _mgr.base) >> PAGE_SIZE_SHIFT;
+	ASSERT (end <= _mgr.tot_blk);
 	while (start < end) {
-		if (!BM_TEST (mgr->bm0, start)) {
-			_set (mgr, start);
-			mgr->used_blk++;
+		if (!BM_TEST (_mgr.bm0, start)) {
+			_set (start);
+			_mgr.used_blk++;
 		}
 		start++;
 	}
 }
 
 // Mark memory as free
-static void _mark_free(struct bm_pmmgr *mgr, paddr_t start, paddr_t end) {
-	ASSERT (start >= mgr->base);
-	start = (start - mgr->base) >> PAGE_SIZE_SHIFT;
-	end = (end - mgr->base) >> PAGE_SIZE_SHIFT;
-	ASSERT (end <= mgr->tot_blk);
+static void _mark_free(paddr_t start, paddr_t end) {
+	ASSERT (start >= _mgr.base);
+	start = (start - _mgr.base) >> PAGE_SIZE_SHIFT;
+	end = (end - _mgr.base) >> PAGE_SIZE_SHIFT;
+	ASSERT (end <= _mgr.tot_blk);
 	while (start < end) {
-		if (BM_TEST (mgr->bm0, start)) {
-			_unset (mgr, start);
-			mgr->used_blk--;
+		if (BM_TEST (_mgr.bm0, start)) {
+			_unset (start);
+			_mgr.used_blk--;
 		}
 		start++;
 	}
 }
 
 // Initialize a bitmap based memory manager
-static void _init(struct bm_pmmgr *mgr, region_t *regions, uint32_t num_regions) {
+static void _init(region_t *regions, uint32_t num_regions, paddr_t fast_start, paddr_t fast_end) {
 	paddr_t bm0_nbi, bm0_nby, bm1_nbi, bm1_nby, bm_sz;
 	uint32_t i, bmreg = 0;
 	ASSERT (num_regions > 1);
 	// Get memory size
-	mgr->base = REGION_START (regions[num_regions - 1]);
-	mgr->mem_sz = REGION_START (regions[0]) - mgr->base;
-	mgr->tot_blk = mgr->used_blk = mgr->mem_sz >> PAGE_SIZE_SHIFT;
+	_mgr.base = REGION_START (regions[num_regions - 1]);
+	_mgr.mem_sz = REGION_START (regions[0]) - _mgr.base;
+	_mgr.tot_blk = _mgr.used_blk = _mgr.mem_sz >> PAGE_SIZE_SHIFT;
+	_mgr.fast_start = fast_start;
+	_mgr.fast_end = fast_end;
 	// Get size of bitmaps required
-	bm0_nbi = mgr->tot_blk;
+	bm0_nbi = _mgr.tot_blk;
 	bm0_nby = ROUND_UP (bm0_nbi, WORD_SIZE) >> 3;
 	bm1_nbi = bm0_nby >> (WORD_SIZE_SHIFT - 3);
 	bm1_nby = ROUND_UP (bm1_nbi, WORD_SIZE) >> 3;
 	// Get size we need to reserve within our regions
 	bm_sz = PAGE_ALGN_UP (bm0_nby + bm1_nby);
-	// Find a region big enough to accomodate the bitmaps
+	// Find a region big enough to accomodate the bitmaps. Also mark the regions as managed
 	for (i = num_regions - 1; i > 0; i--) {
+		REGION_SET_MANAGED (regions[i]);
 		if (REGION_START (regions[i - 1]) - REGION_START (regions[i]) < bm_sz) {
 			continue;
 		}
@@ -91,8 +94,8 @@ static void _init(struct bm_pmmgr *mgr, region_t *regions, uint32_t num_regions)
 	}
 	// Found
 #if defined(__ARCH_x86_64__) || defined(__ARCH_x86__)
-	BM_INIT (mgr->bm0, REGION_START (regions[bmreg]) + KRNL_VBASE, bm0_nbi);
-	BM_INIT (mgr->bm1, REGION_START (regions[bmreg]) + KRNL_VBASE + BM_SZ (mgr->bm0), bm1_nbi);
+	BM_INIT (_mgr.bm0, REGION_START (regions[bmreg]) + KRNL_VBASE, bm0_nbi);
+	BM_INIT (_mgr.bm1, REGION_START (regions[bmreg]) + KRNL_VBASE + BM_SZ (_mgr.bm0), bm1_nbi);
 #else
 	PANIC ("Architecture not handled yet");
 #endif
@@ -100,50 +103,47 @@ static void _init(struct bm_pmmgr *mgr, region_t *regions, uint32_t num_regions)
 	// Go over regions and mark map regions accordingly
 	for (i = 1; i < num_regions; i++) {
 		if (REGION_TYPE (regions[i]) == REGION_TYPE_AVAIL) {
-			_mark_free (mgr, REGION_START (regions[i]), REGION_START (regions[i - 1]));
+			_mark_free (REGION_START (regions[i]), REGION_START (regions[i - 1]));
 		}
 	}
 	// Mark bitmaps as used
-	_mark_used (mgr, REGION_START (regions[bmreg]), REGION_START (regions[bmreg]) + bm_sz);
-}
-
-// Initialize the fast bitmap based memory manager
-static void _fast_init(region_t *regions, uint32_t num_regions) {
-	_init (&_fast_mgr, regions, num_regions);
-}
-
-// Initialize the special bitmap based memory manager
-static void _spl_init(region_t *regions, uint32_t num_regions) {
-	_init (&_spl_mgr, regions, num_regions);
+	_mark_used (REGION_START (regions[bmreg]), REGION_START (regions[bmreg]) + bm_sz);
 }
 
 // Allocate one frame (for fast allocator)
-static paddr_t _fast_alloc() {
-	paddr_t i, j, bm1_nw, bm0_nw;
-	if (_fast_mgr.used_blk == _fast_mgr.tot_blk) {
+static paddr_t _alloc() {
+	paddr_t i, j, bm1_nw, bm0_nw, bm0_startw, bm0_endw, bm1_startw, bm1_endw;
+	if (_mgr.used_blk == _mgr.tot_blk) {
 		return PADDR_INVALID;
 	}
-	bm0_nw = ROUND_UP (_fast_mgr.tot_blk, WORD_SIZE) >> WORD_SIZE_SHIFT;
+	bm0_nw = ROUND_UP (_mgr.tot_blk, WORD_SIZE) >> WORD_SIZE_SHIFT;
 	bm1_nw = ROUND_UP (bm0_nw, WORD_SIZE) >> WORD_SIZE_SHIFT;
+
+	// We should know our limits
+	bm0_startw = ROUND_UP (_mgr.fast_start >> PAGE_SIZE_SHIFT, WORD_SIZE) >> WORD_SIZE_SHIFT;
+	bm0_endw = ROUND_DOWN (_mgr.fast_end >> PAGE_SIZE_SHIFT, WORD_SIZE) >> WORD_SIZE_SHIFT;
+	bm1_startw = ROUND_UP (bm0_startw, WORD_SIZE) >> WORD_SIZE_SHIFT;
+	bm1_endw = ROUND_DOWN (bm0_endw, WORD_SIZE) >> WORD_SIZE_SHIFT;
+
 	// Find bm1 word which is not full
-	for (i = 0; i < bm1_nw; i++) {
-		if (_fast_mgr.bm1.map[i] == WORD_MAX) {
+	for (i = bm1_startw; i < bm1_nw && i < bm1_endw; i++) {
+		if (_mgr.bm1.map[i] == WORD_MAX) {
 			continue;
 		}
 		// Found bm1 word. Found bit which is clear
 		for (j = 0; j < WORD_SIZE; j++) {
-			if ((_fast_mgr.bm1.map[i] & (1 << j)) == 0) {
+			if ((_mgr.bm1.map[i] & (1 << j)) == 0) {
 				break;
 			}
 		}
 		// We know j < WORD_SIZE. Found bm0 word. Find bit in that word
 		i = (i << WORD_SIZE_SHIFT) + j;
 		for (j = 0; j < WORD_SIZE; j++) {
-			if ((_fast_mgr.bm0.map[i] & (1 << j)) == 0) {
+			if ((_mgr.bm0.map[i] & (1 << j)) == 0) {
 				// Found frame
 				i = (i << WORD_SIZE_SHIFT) + j;
-				_set (&_fast_mgr, i);
-				return i << PAGE_SIZE_SHIFT;
+				_set (i);
+				return (i << PAGE_SIZE_SHIFT) + _mgr.base;
 			}
 		}
 		PANIC ("unreachable");
@@ -152,21 +152,18 @@ static paddr_t _fast_alloc() {
 }
 
 // Free one frame (for fast allocator)
-static void _fast_free(paddr_t addr) {
+static void _free(paddr_t addr) {
 	ASSERT ((addr & ~PADDR_ALGN_MASK) == 0);
+	ASSERT (addr >= _mgr.fast_start);
+	ASSERT (addr < _mgr.fast_end);
 	addr >>= PAGE_SIZE_SHIFT;
-	ASSERT (BM_TEST (_fast_mgr.bm0, addr));
-	_unset (&_fast_mgr, addr);
+	ASSERT (BM_TEST (_mgr.bm0, addr));
+	_unset (addr);
 }
 
-// The special memory manager
-struct pmmgr BM_SPL_PMMGR = {
-	.init = _spl_init,
-};
-
-// The fast memory manager
+// The memory manager
 struct pmmgr BM_PMMGR = {
-	.init = _fast_init,
-	.alloc = _fast_alloc,
-	.free = _fast_free,
+	.init = _init,
+	.alloc = _alloc,
+	.free = _free,
 };
