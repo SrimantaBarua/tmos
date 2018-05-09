@@ -105,7 +105,7 @@ struct pmmgr {
 	// Free one frame (for fast 1-frame allocators)
 	void (*free) (paddr_t addr);
 	// Allocate with given requirements (for special allocators)
-	// between `above` and `below`, aligned to (1 << `align`) pages, `num` pages
+	// between `above` and `below`, aligned to (1 << `align`) page size, `num` frames
 	paddr_t (*spl_alloc) (paddr_t above, paddr_t below, uint32_t align, uint32_t num);
 	// Free given range of pages (for special allocators)
 	void (*spl_free) (paddr_t addr, uint32_t num);

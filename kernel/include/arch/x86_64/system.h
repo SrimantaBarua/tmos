@@ -9,6 +9,7 @@
 #define PAGE_SIZE       4096
 #define PAGE_SIZE_SHIFT 12
 #define PADDR_MASK      0x00ffffffffffffff
+#define PADDR_INVALID   UINT64_MAX
 #define PADDR_ALGN_MASK 0x00fffffffffff000
 #define VADDR_ALGN_MASK 0xfffffffffffff000
 

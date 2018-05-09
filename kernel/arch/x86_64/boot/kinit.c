@@ -54,6 +54,12 @@ void kinit_multiboot2(vaddr_t pointer) {
 	}
 
 	BM_PMMGR.init (&_KMMAP.r[first], i + 1 - first);
+	for (i = 0; i < 10; i++) {
+		klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
+	}
+	BM_PMMGR.free (0x3000);
+	klog ("free(0x3000)\nalloc() -> 0x%p\n", BM_PMMGR.alloc ());
+	klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
 
 	// Initialize and enable interrupts
 	idt_init ();
