@@ -17,6 +17,8 @@ static struct mmap _KMMAP = { 0 };
 // bootloader. Perform initialization and set up state to the point where we can hand off to
 // common kernel code
 void kinit_multiboot2(vaddr_t pointer) {
+	uint32_t first = UINT32_MAX, tot, i;
+
 	// Initialize serial communication
 	serial_init ();
 
@@ -31,9 +33,27 @@ void kinit_multiboot2(vaddr_t pointer) {
 	// Mark region for kernel
 	mmap_insert_region (&_KMMAP, PAGE_ALGN_DOWN (KRNL_PHYS_START),
 			PAGE_ALGN_UP (KRNL_PHYS_END), REGION_TYPE_KERNEL);
+	// Split at 16MB mark, with low memory for DMA allocator
+	mmap_split_at (&_KMMAP, 0x1000000);
+
 	// Print memory map
 	mmap_print (&_KMMAP);
 
+	// Initialize low memory allocator
+	for (tot = 0; tot < MMAP_MAX_NUM_ENTRIES; tot++) {
+		if (REGION_TYPE (_KMMAP.r[tot]) == REGION_TYPE_AVAIL && first == UINT32_MAX) {
+			first = tot - 1;
+		}
+		if (!REGION_START (_KMMAP.r[tot])) {
+			tot++;
+			break;
+		}
+		if (REGION_START (_KMMAP.r[tot]) == 0x1000000) {
+			i = tot;
+		}
+	}
+
+	BM_PMMGR.init (&_KMMAP.r[first], i + 1 - first);
 
 	// Initialize and enable interrupts
 	idt_init ();

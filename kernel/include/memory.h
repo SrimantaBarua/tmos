@@ -65,6 +65,7 @@ typedef uint64_t region_t;
 	(r) &= ~REGION_FLAG_MANAGED; \
 }
 
+
 // A memory map made up of an array of our regions, and the number of regions
 // Hopefully we won't have more than 128 regions...
 
@@ -86,3 +87,31 @@ void mmap_split_at(struct mmap *map, uint64_t addr);
 
 // Print the memory map
 void mmap_print(const struct mmap *map);
+
+
+// Interface for a physical memory manager
+
+// Type of physical memory manager
+#define PMMGR_TYPE_FAST    0
+#define PMMGR_TYPE_SPECIAL 1
+
+struct pmmgr {
+	// Initialize the physical memory manager to handle the given regions
+	// The first element in the regions array denotes the last address, and is not to be
+	// managed by the physical memory manager. However, num_regions includes this region
+	void (*init) (region_t *regions, uint32_t num_regions);
+	// Allocate one frame (for fast 1-frame allocators)
+	paddr_t (*alloc) (void);
+	// Free one frame (for fast 1-frame allocators)
+	void (*free) (paddr_t addr);
+	// Allocate with given requirements (for special allocators)
+	// between `above` and `below`, aligned to (1 << `align`) pages, `num` pages
+	paddr_t (*spl_alloc) (paddr_t above, paddr_t below, uint32_t align, uint32_t num);
+	// Free given range of pages (for special allocators)
+	void (*spl_free) (paddr_t addr, uint32_t num);
+	// Type of memory manager
+	uint8_t type;
+};
+
+// Known physical memory managers
+extern struct pmmgr BM_SPL_PMMGR, BM_PMMGR;

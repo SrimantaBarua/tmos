@@ -15,9 +15,11 @@
 // Word sizes
 #define WORD_SIZE       64
 #define WORD_SIZE_SHIFT 6
+#define WORD_MAX        UINT64_MAX
 
-typedef uint64_t vaddr_t ;
-typedef uint64_t paddr_t ;
+typedef uint64_t word_t;
+typedef uint64_t vaddr_t;
+typedef uint64_t paddr_t;
 
 // Symbols from linker.ld
 extern int __kernel_vbase__;

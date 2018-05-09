@@ -12,6 +12,10 @@
 #include <arch/x86_64/system.h>
 #endif
 
+// Utility math
+#define ROUND_UP(x, y) (((x) + ((y) - 1)) & ~((y) - 1))
+#define ROUND_DOWN(x, y) ((x) & ~((y) - 1))
+
 // Page-alignment macros
-#define PAGE_ALGN_UP(x) (((x) + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1))
-#define PAGE_ALGN_DOWN(x) ((x) & ~(PAGE_SIZE - 1))
+#define PAGE_ALGN_UP(x) ROUND_UP (x, PAGE_SIZE)
+#define PAGE_ALGN_DOWN(x) ROUND_DOWN (x, PAGE_SIZE)
