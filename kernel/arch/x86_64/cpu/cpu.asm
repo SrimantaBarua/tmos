@@ -10,6 +10,8 @@ global idt_enable_int
 
 global crash_and_burn
 
+global set_cs
+
 ; Read the CPU's RFLAGS register
 ; Returns -> AX = value
 section .text.cpu_read_rflags
@@ -92,13 +94,32 @@ isr_%1:
 %endmacro
 
 
-; Commong part of known exception handlers
+; Common part of known exception handlers
 section .text._isr_common
 _isr_common:
 	PUSH_ALL			; Store registers
 	mov	rdi, rsp		; Pass pointers to pushed registers
 	extern	isr_common_c_handler
 	call	isr_common_c_handler	; Jump to common C handler
+
+section .text.set_cs
+set_cs:
+	and	rdi, 0xffff
+	xor	rax, rax
+	mov	ax, ss
+	mov	rdx, rsp
+	mov	rcx, .loc
+
+	push	rax
+	push	rdx
+	pushf
+	push	rdi
+	push	rcx
+	iretq
+
+.loc:
+	ret
+
 
 section .text
 

@@ -9,6 +9,7 @@
 #include <memory.h>
 #include <klog.h>
 #include <arch/x86_64/idt.h>
+#include <arch/x86_64/gdt.h>
 
 // The kernel's memory map
 static struct mmap _KMMAP = { 0 };
@@ -58,6 +59,7 @@ void kinit_multiboot2(vaddr_t pointer) {
 	klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
 
 	// Initialize and enable interrupts
+	gdt_init ();
 	idt_init ();
 	idt_enable_int ();
 

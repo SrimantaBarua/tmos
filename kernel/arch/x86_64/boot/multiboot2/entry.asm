@@ -158,7 +158,7 @@ gdt64:
     .code: equ ($ - gdt64)			; Code descriptor
 	dq (1 << 41) | (1 << 43) | (1 << 44) | (1 << 47) | (1 << 53)
     .data: equ ($ - gdt64)			; Data descriptor
-	dq (1 << 41) | (1 << 44) | (1 << 47)
+	dq (1 << 41) | (1 << 42) | (1 << 44) | (1 << 47) | (1 << 53)
 
 ; GDTR
 gdtr64:
