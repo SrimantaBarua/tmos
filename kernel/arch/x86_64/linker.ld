@@ -20,15 +20,9 @@ SECTIONS {
 		*(.text*)
 		*(.init*)
 		*(.fini*)
-		. = ALIGN(4K);
-		__text_end__ = .;
-	}
-
-	.rodata : AT(ADDR(.rodata) - __kernel_vbase__) {
-		__rodata_start__ = .;
 		*(.rodata*)
 		. = ALIGN(4K);
-		__rodata_end__ = .;
+		__text_end__ = .;
 	}
 
 	.data : AT(ADDR(.data) - __kernel_vbase__) {

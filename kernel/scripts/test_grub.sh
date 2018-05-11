@@ -16,11 +16,13 @@ cat > isodir/boot/grub/grub.cfg << EOF
 set timeout=0
 set default=0
 menuentry "shuos" {
-	multiboot2 /boot/shuos.kernel
+	insmod gzio
+	multiboot2 /boot/shuos.kernel.gz
 	boot
 }
 EOF
 cp $kernel isodir/boot/
+gzip isodir/boot/$kernel -f
 grub-mkrescue -o $iso isodir -d /usr/lib/grub/i386-pc
 qemu-system-x86_64 $iso $serial_cmd
 }

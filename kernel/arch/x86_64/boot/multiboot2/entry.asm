@@ -48,8 +48,7 @@ _start:
 	call	check_cpuid
 	call	check_long_mode
 
-	; Set up and enable paging and long mode
-	call	set_up_page_tables
+	; Enable paging and long mode
 	call	enable_paging
 
 	pop	ebx
@@ -106,31 +105,6 @@ check_long_mode:
 	jz	halt
 	ret
 
-; Set up page tables. Set them up such that they look something like this -
-; pml4[0]   -> pdp0
-;     pdp0[0] -> 0 - 1 GB (Huge page)
-; pml4[510] -> pml4 (recursive mapping)
-; pml4[511] -> pdp1
-;     pdp1[510] -> 0 - 1 GB (Huge page)
-;
-; This results in the first 2 MB of RAM being identity-mapped using one huge page, and also
-; mapped from a higher address (-2GB).
-set_up_page_tables:
-	mov	eax, pdp0		; PML4[0] -> PDP0
-	or	eax, 0x03		; Present + writable
-	mov	[pml4], eax
-	mov	eax, pml4		; PML4[510] -> PML4
-	mov	[pml4 + 0xff0], eax
-	or	eax, 0x03
-	mov	eax, pdp1		; PML4[511] -> PDP1
-	or	eax, 0x03
-	mov	[pml4 + 0xff8], eax
-	xor	eax, eax		; PDP0[0] -> 0 - 1 GB | PDP1[510] -> 0 - 1 GB
-	or	eax, 0x83		; Present + writable + huge
-	mov	[pdp0], eax
-	mov	[pdp1 + 0xff0], eax
-	ret
-
 ; Enable paging and long mode
 enable_paging:
 	; Load PML4 into CR3 register
@@ -166,13 +140,27 @@ gdtr64:
 	.base:  dq gdt64
 
 ; Temporary page tables
+; pml4[0]   -> pdp0
+;     pdp0[0] -> 0 - 1 GB (Huge page)
+; pml4[510] -> pml4 (recursive mapping)
+; pml4[511] -> pdp1
+;     pdp1[510] -> 0 - 1 GB (Huge page)
+;
+; This results in the first 2 MB of RAM being identity-mapped using one huge page, and also
+; mapped from a higher address (-2GB).
 align 4096
 pml4:
-	times 4096 db 0
+	dq (pdp0 + 0x03)
+	times 509 dq 0
+	dq (pml4 + 0x03)
+	dq (pdp1 + 0x03)
 pdp0:
-	times 4096 db 0
+	dq 0x83
+	times 511 dq 0
 pdp1:
-	times 4096 db 0
+	times 510 dq 0
+	dq 0x83
+	dq 0
 
 
 
@@ -191,6 +179,9 @@ long_mode_init:
 	mov	gs, ax
 	mov	ss, ax
 
+	; Zero out the kernel BSS region
+	call	zero_bss
+
 	; Load a more sensible kernel stack
 	mov	rsp, kernel_stack_top
 
@@ -204,6 +195,18 @@ long_mode_init:
 	cli
 	hlt
 	jmp	$
+
+; Zero out the kernel BSS region
+zero_bss:
+	extern __bss_start__
+	extern __bss_end__
+	mov	rsi, __bss_start__
+	mov	rcx, __bss_end__
+	sub	rcx, __bss_start__
+	shr	rcx, 3
+	xor	rax, rax
+	stosq
+	ret
 
 
 section .bss
