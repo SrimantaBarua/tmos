@@ -146,7 +146,7 @@ void isr_common_c_handler(const struct int_regs *regs) {
 		str = "Unknown";
 	}
 	klog ("Interrupt: (%s)\n"
-	      "CS: %#04x, RIP: %#016x, SS: %#04x, RSP: %#016x, Error: %#x\n",
+	      "CS: %#04x, RIP: %#016llx, SS: %#04x, RSP: %#016llx, Error: %#x\n",
 	      str, regs->cs, regs->rip, regs->ss, regs->rsp, regs->err_code);
 	crash_and_burn ();
 }
