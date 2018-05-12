@@ -109,19 +109,15 @@ void kinit_multiboot2(vaddr_t pointer) {
 	}
 	BM_PMMGR.init (&_KMMAP.r[first], tot, 0x1000000, PADDR_ALGN_MASK);
 
-	// Alloc test
-	for (i = 0; i < 10; i++) {
-		klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
-	}
-	BM_PMMGR.free (0x1003000);
-	klog ("free(0x1003000)\nalloc() -> 0x%p\n", BM_PMMGR.alloc ());
-	klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
-
 	// Initialize memory management
 	mem_init (&BM_PMMGR, _remap_cb_multiboot2);
 
 	// Print current page table structure
 	vmm_print_ptable ();
+
+	vmm_map (0x2000, 1, PTE_FLG_WRITABLE);
+	uint64_t *iptr = (uint64_t*) 0x2000;
+	*iptr = 5;
 
 	vmm_map_to (0xb8000, 0xb8000, 1, PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
 	uint64_t *ptr = (uint64_t*) 0xb8000;

@@ -12,6 +12,7 @@ struct bm_pmmgr {
 	struct bitmap bm0, bm1;
 };
 
+// TODO: Locking
 static struct bm_pmmgr _mgr = { 0 };
 
 // Set a bit in memory manager's bitmap, and also upper level bitmap if required

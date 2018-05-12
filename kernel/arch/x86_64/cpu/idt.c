@@ -52,12 +52,13 @@ extern void isr_10();
 extern void isr_11();
 extern void isr_12();
 extern void isr_13();
-extern void isr_14();
 extern void isr_16();
 extern void isr_17();
 extern void isr_18();
 extern void isr_19();
 extern void isr_20();
+
+extern void isr_page_fault();
 
 // Load the IDT pointer
 static void _lidt(struct idt_ptr *idtr) {
@@ -81,7 +82,7 @@ void idt_init() {
 	isr_set_gate (11, isr_11, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
 	isr_set_gate (12, isr_12, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
 	isr_set_gate (13, isr_13, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (14, isr_14, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate (14, isr_page_fault, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
 	isr_set_gate (16, isr_16, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
 	isr_set_gate (17, isr_17, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
 	isr_set_gate (18, isr_18, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);

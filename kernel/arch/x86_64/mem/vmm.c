@@ -34,6 +34,9 @@ struct ptable {
 #define PTE_TO_ALLOC(e)    (((e) & PTE_FLG_TO_ALLOC) != 0)
 #define PTE_NOEXEC(e)      (((e) & PTE_FLG_NO_EXEC) != 0)
 
+// Get all flags
+#define PTE_FLAGS(e) ((e) & ~PTE_PADDR_MASK)
+
 // Set and unset flag
 #define PTE_SET_FLG(e,flag)   do { e |= flag; } while (0)
 #define PTE_UNSET_FLG(e,flag) do { e &= ~(flag); } while (0)
@@ -248,7 +251,6 @@ paddr_t vmm_switch_addr_space(paddr_t new_pml4_addr) {
 void vmm_map(vaddr_t vaddr, uint64_t n, uint64_t flags) {
 	struct ptable *pml4, *pdp, *pd, *pt;
 	uint64_t idx, i;
-	paddr_t paddr;
 	// Check we're initialized
 	ASSERT (_PMMGR);
 	// Check if addresses are valid
@@ -262,11 +264,10 @@ void vmm_map(vaddr_t vaddr, uint64_t n, uint64_t flags) {
 		ASSERT (pd = _pt_create (pdp, PDP_IDX (vaddr)));
 		ASSERT (pt = _pt_create (pd, PD_IDX (vaddr)));
 		idx = PT_IDX (vaddr);
-		// Allocate paddr
-		ASSERT((paddr = _PMMGR->alloc ()) != PADDR_INVALID);
 		// Check that PT entry is unused
 		ASSERT (PTE_UNUSED (pt->e[idx]));
-		PTE_SET (pt->e[idx], paddr, flags | PTE_FLG_PRESENT);
+		// Mark as to be allocated
+		PTE_SET (pt->e[idx], 0, (flags | PTE_FLG_TO_ALLOC) & ~PTE_FLG_PRESENT);
 		// Go to next page
 		vaddr += PAGE_SIZE;
 	}
@@ -407,4 +408,53 @@ void invlpg(vaddr_t addr) {
 // Invalidate the whole TLP
 void tlb_flush_all() {
 	__asm__ __volatile__ ("mov rax, cr3; mov cr3, rax\n" : : : "rax", "memory");
+}
+
+
+// PAGE FAULT HANDLER
+
+// Error code bits
+#define ERR_CODE_PRESENT 1
+#define ERR_CODE_WRITE   2
+#define ERR_CODE_USER    4
+#define ERR_CODE_RSVD    8
+#define ERR_CODE_INSTR   16
+
+// The handler called by the asm handler
+void vmm_page_fault_handler(vaddr_t addr, vaddr_t rip, uint64_t err) {
+	struct ptable *pml4, *pdp, *pd, *pt;
+	paddr_t paddr;
+	uint64_t idx, flags;
+	klog ("Page fault at %#llx, RIP: %#llx, ERR: %#llx\n", addr, rip, err);
+	// If it's a no-exec fault, then abort
+	if (err & ERR_CODE_INSTR) {
+		klog ("Attempt to execute at no-exec memory at %#llx. Abort.\n", addr);
+		crash_and_burn ();
+	}
+	// If it's a reserved bit detection fault, then abort
+	if (err & ERR_CODE_RSVD) {
+		klog ("Reserved bit set. Addr = %#llx. Abort\n", addr);
+		crash_and_burn ();
+	}
+	// If it's not present, but was marked for allocation, allocate it
+	if (!(err & ERR_CODE_PRESENT)) {
+		pml4 = (struct ptable*) PML4_VADDR;
+		if (!(pdp = _pt_child (pml4, PML4_IDX (addr)))
+		    || !(pd = _pt_child (pdp, PDP_IDX (addr)))
+		    || !(pt = _pt_child (pd, PD_IDX (addr)))) {
+			klog ("Rogue pointer: %#llx. Abort\n", addr);
+			crash_and_burn ();
+		}
+		idx = PT_IDX (addr);
+		// TODO: Swapping
+		if (PTE_TO_ALLOC (pt->e[idx])) {
+			ASSERT ((paddr = _PMMGR->alloc ()) != PADDR_INVALID);
+			flags = PTE_FLAGS (pt->e[idx]);
+			flags = (flags | PTE_FLG_PRESENT) & ~PTE_FLG_TO_ALLOC;
+			PTE_SET (pt->e[idx], paddr, flags);
+			return;
+		}
+		klog ("Rogue pointer: %#llx. Abort\n", addr);
+		crash_and_burn ();
+	}
 }
