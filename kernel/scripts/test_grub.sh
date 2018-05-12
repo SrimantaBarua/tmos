@@ -24,7 +24,7 @@ EOF
 cp $kernel isodir/boot/
 gzip isodir/boot/$kernel -f
 grub-mkrescue -o $iso isodir -d /usr/lib/grub/i386-pc
-qemu-system-x86_64 $iso $serial_cmd
+qemu-system-x86_64 $iso $serial_cmd -no-reboot -d int
 }
 
 function grub_clean() {

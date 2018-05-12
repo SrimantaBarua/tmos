@@ -1,0 +1,12 @@
+# MEMORY MAP LAYOUT FOR THE KERNEL
+
+0                     - 0xffff_8000_0000_0000         -> --Nothing--
+0xffff_8000_0000_0000 - 0xffff_8100_0000_0000 (1024G) -> Kernel heap
+0xffff_8100_0000_0000 - 0xffff_ff70_0000_0000         -> --Nothing--
+0xffff_ff70_0000_0000 - 0xffff_ff80_0000_0000         -> Active page tables
+0xffff_ff80_0000_0000 - 0xffff_ffff_8000_0000 (510G)  -> Arbitrary fixed addresses *
+0xffff_ffff_8000_0000 - 0xffff_ffff_c000_0000 (1G)    -> Kernel
+0xffff_ffff_c000_0000 - end                           -> --Nothing--
+
+ARBITRARY FIXED ADDRESSES
+0xffff_ff80_0000_0000 - 0xffff_ff80_0000_1000         -> Temporary page

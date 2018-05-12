@@ -1,7 +1,7 @@
 ENTRY(_start)
 
 SECTIONS {
-	__kernel_vbase__ = 0xFFFFFFFF80000000;
+	__kernel_vbase__ = 0xffffffff80000000;
 
 	. = 1M;
 
@@ -20,9 +20,14 @@ SECTIONS {
 		*(.text*)
 		*(.init*)
 		*(.fini*)
-		*(.rodata*)
 		. = ALIGN(4K);
 		__text_end__ = .;
+	}
+	.rodata : AT(ADDR(.rodata) - __kernel_vbase__) {
+		__rodata_start__ = .;
+		*(.rodata*)
+		. = ALIGN(4K);
+		__rodata_end__ = .;
 	}
 
 	.data : AT(ADDR(.data) - __kernel_vbase__) {

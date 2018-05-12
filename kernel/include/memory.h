@@ -106,6 +106,9 @@ struct pmmgr {
 	paddr_t (*spl_alloc) (paddr_t above, paddr_t below, uint32_t align, uint32_t num);
 	// Free given range of pages (for special allocators)
 	void (*spl_free) (paddr_t addr, uint32_t num);
+	// Optional callback for mapping the bitmap into a new address space
+	// eg. when setting up paging on x86/x86_64
+	void (*remap_cb) ();
 };
 
 // Known physical memory managers
@@ -113,4 +116,5 @@ extern struct pmmgr BM_SPL_PMMGR, BM_PMMGR;
 
 
 // Initialize the memory management subsystem with the given underlying physical memory manager
-void mem_init(struct pmmgr *pmmgr);
+// Also provide an optional callback for remapping in case required
+void mem_init(struct pmmgr *pmmgr, void (*remap_cb) (void));

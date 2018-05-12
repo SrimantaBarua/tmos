@@ -29,11 +29,20 @@ void vmm_free(vaddr_t vaddr, uint64_t n);
 // Map a virtual page to a given physical frame with the given flags
 void vmm_map_to(vaddr_t vaddr, paddr_t paddr, uint64_t n, uint64_t flags);
 
+// Translate a virtual address to a physical address
+paddr_t vmm_translate(vaddr_t vaddr);
+
 // Unmap n virtual memory pages
 void vmm_unmap(vaddr_t vaddr, uint64_t n);
 
 // Print the page table structure
 void vmm_print_ptable();
 
+// Switch address space to PML4 at given paddr, and return paddr of current PML4
+paddr_t vmm_switch_addr_space(paddr_t new_pml4_addr);
+
 // Invalidate a page table entry
 void invlpg(vaddr_t addr);
+
+// Invalidate the whole TLP
+void tlb_flush_all();

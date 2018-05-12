@@ -12,6 +12,17 @@ global crash_and_burn
 
 global set_cs
 
+global read_cr0
+global write_cr0
+global read_cr2
+global write_cr2
+global read_cr3
+global write_cr3
+global read_cr4
+global write_cr4
+global read_cr8
+global write_cr8
+
 ; Read the CPU's RFLAGS register
 ; Returns -> AX = value
 section .text.cpu_read_rflags
@@ -46,6 +57,67 @@ crash_and_burn:
 	cli
 	hlt
 	jmp	crash_and_burn
+
+; Read the CR0 register
+section .text.read_cr0
+read_cr0:
+	mov	rax, cr0
+	ret
+
+; Write the CR0 register
+section .text.write_cr0
+write_cr0:
+	mov	cr0, rdi
+	ret
+
+; Read the CR2 register
+section .text.read_cr2
+read_cr2:
+	mov	rax, cr2
+	ret
+
+; Write the CR2 register
+section .text.write_cr2
+write_cr2:
+	mov	cr2, rdi
+	ret
+
+; Read the CR3 register
+section .text.read_cr3
+read_cr3:
+	mov	rax, cr3
+	ret
+
+; Write the CR3 register
+section .text.write_cr3
+write_cr3:
+	mov	cr3, rdi
+	ret
+
+; Read the CR4 register
+section .text.read_cr4
+read_cr4:
+	mov	rax, cr4
+	ret
+
+; Write the CR4 register
+section .text.write_cr4
+write_cr4:
+	mov	cr4, rdi
+	ret
+
+; Read the CR8 register
+section .text.read_cr8
+read_cr8:
+	mov	rax, cr8
+	ret
+
+; Write the CR8 register
+section .text.write_cr8
+write_cr8:
+	mov	cr8, rdi
+	ret
+
 
 ; -------------------------------
 ; CPU Interrupt Service Routines

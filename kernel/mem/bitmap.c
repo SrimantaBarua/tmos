@@ -161,9 +161,27 @@ static void _free(paddr_t addr) {
 	_unset (addr);
 }
 
+// Remap the space taken by the bitmap
+#if defined(__ARCH_x86_64__)
+#include <arch/x86_64/memory.h>
+
+static void _remap_cb() {
+	uint64_t bm0sz, bm1sz, num;
+	bm0sz = ROUND_UP (_mgr.tot_blk, WORD_SIZE) >> 3;
+	bm1sz = ROUND_UP (bm0sz >> 3, WORD_SIZE) >> 3;
+	num = PAGE_ALGN_UP (bm0sz +  bm1sz) >> PAGE_SIZE_SHIFT;
+	vmm_map_to ((vaddr_t) _mgr.bm0.map, (paddr_t) _mgr.bm0.map - KRNL_VBASE, num,
+		    PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
+}
+
+#endif
+
 // The memory manager
 struct pmmgr BM_PMMGR = {
 	.init = _init,
 	.alloc = _alloc,
 	.free = _free,
+#if defined(__ARCH_x86_64__)
+	.remap_cb = _remap_cb,
+#endif
 };

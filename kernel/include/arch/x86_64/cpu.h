@@ -5,6 +5,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <arch/x86_64/ctrlreg.h>
+#include <arch/x86_64/msr.h>
 
 // The CPU RFLAGS register
 union rflags {
@@ -45,4 +47,14 @@ inline union rflags cpu_read_rflags() {
 // Write the RFLAGS register
 inline void cpu_write_rflags(union rflags flags) {
 	__asm__ __volatile__ ("push rdi; popfq" : : "D"(flags.raw) : "memory" );
+}
+
+// Enable exec protection, so that we can't execute code from pages marked NO_EXEC
+inline void set_nx() {
+	wrmsr (MSR_EFER, rdmsr (MSR_EFER) | MSR_EFER_NXE);
+}
+
+// Enable write protection, so that we can't write to pages unless marked WRITABLE
+inline void set_write_protect() {
+	write_cr0 (read_cr0 () | CR0_WRITE_PROTECT);
 }
