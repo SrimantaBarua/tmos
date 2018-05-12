@@ -7,6 +7,7 @@
 #include <serial.h>
 #include <multiboot2.h>
 #include <memory.h>
+#include <arch/x86_64/memory.h>
 #include <klog.h>
 #include <arch/x86_64/idt.h>
 #include <arch/x86_64/gdt.h>
@@ -57,6 +58,24 @@ void kinit_multiboot2(vaddr_t pointer) {
 	BM_PMMGR.free (0x1003000);
 	klog ("free(0x1003000)\nalloc() -> 0x%p\n", BM_PMMGR.alloc ());
 	klog ("alloc() -> 0x%p\n", BM_PMMGR.alloc ());
+
+	// Initialize memory management
+	mem_init (&BM_PMMGR);
+
+	// Print current page table structure
+	vmm_print_ptable ();
+
+	// Allocate a page
+	vmm_map (0xfffffffffffff000, 1, PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
+
+	// Print current page table structure
+	vmm_print_ptable ();
+
+	// Free a page
+	vmm_free (0xfffffffffffff000, 1);
+
+	// Print current page table structure
+	vmm_print_ptable ();
 
 	// Initialize and enable interrupts
 	gdt_init ();

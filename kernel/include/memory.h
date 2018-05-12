@@ -110,3 +110,7 @@ struct pmmgr {
 
 // Known physical memory managers
 extern struct pmmgr BM_SPL_PMMGR, BM_PMMGR;
+
+
+// Initialize the memory management subsystem with the given underlying physical memory manager
+void mem_init(struct pmmgr *pmmgr);
