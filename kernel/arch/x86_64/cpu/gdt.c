@@ -1,5 +1,6 @@
 // (C) 2018 Srimanta Barua
 
+#include <system.h>
 #include <arch/x86_64/gdt.h>
 
 // Buffer for GDT segments
@@ -12,7 +13,7 @@ static uint64_t _next;
 static struct {
 	uint16_t limit;
 	uint64_t base;
-} __attribute__((packed)) _gdtr = {
+} PACKED _gdtr = {
 	.limit = 0,
 	.base = 0,
 };

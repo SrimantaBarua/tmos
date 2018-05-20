@@ -10,6 +10,9 @@
 
 // Compiler options
 #define FORCEINLINE inline __attribute__ ((always_inline))
+#define NOINLINE    __attribute__ ((noinline))
+#define PACKED      __attribute__ ((packed))
+#define NORETURN    __attribute__ ((noreturn))
 
 #if defined(__ARCH_x86_64__)
 #include <arch/x86_64/system.h>

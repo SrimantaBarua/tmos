@@ -35,7 +35,7 @@ union rflags {
 		uint64_t VIP      : 1;  // Virtual interrupt pending
 		uint64_t ID       : 1;  // Able to use CPUID
 		uint64_t _rsvd0_3 : 42; // Always 0
-	} __attribute__ ((packed)) f;
+	} PACKED f;
 };
 
 // Read the RFLAGS register

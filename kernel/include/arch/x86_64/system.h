@@ -71,4 +71,4 @@ extern int __bss_end__;
 #define sys_enable_int() idt_enable_int ()
 
 // Stop forever
-__attribute__((noreturn)) void crash_and_burn();
+NORETURN void crash_and_burn();
