@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#if defined(__ARCH_x86_64__)
+#if defined(__CFG_ARCH_x86_64__)
 #include <arch/x86_64/string.h>
 #endif
 

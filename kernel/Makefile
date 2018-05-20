@@ -14,7 +14,7 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 
 # Compiler and linker flags
 CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARN) -g
-CPPFLAGS:=-Iinclude/ -D__ARCH_$(ARCH)__
+CPPFLAGS:=-Iinclude/ -D__CFG_ARCH_$(ARCH)__
 LDFLAGS:=-nostdlib -Wl,-gc-sections
 LIBS:=-lgcc
 
