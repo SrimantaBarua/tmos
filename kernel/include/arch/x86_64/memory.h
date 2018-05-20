@@ -5,6 +5,7 @@
 #pragma once
 
 #include <system.h>
+#include <memory.h>
 
 // Flags for a page table entry
 #define PTE_FLG_PRESENT        ((uint64_t) (1 << 0))
@@ -19,6 +20,9 @@
 #define PTE_FLG_TO_ALLOC       ((uint64_t) (1 << 9))
 #define PTE_PADDR_MASK         ((uint64_t) 0x000ffffffffff000)
 #define PTE_FLG_NO_EXEC        ((uint64_t) 0x8000000000000000)
+
+// Initialize virtual memory manager
+void vmm_init(struct pmmgr *pmmgr, void (*remap_cb) (void));
 
 // Allocate and map n virtual memory pages with the given flags
 void vmm_map(vaddr_t addr, uint64_t n, uint64_t flags);

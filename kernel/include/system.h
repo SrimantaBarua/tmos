@@ -8,6 +8,9 @@
 #define VERSION_MINOR 1
 #define VERISON_PATCH 0
 
+// Compiler options
+#define FORCEINLINE inline __attribute__ ((always_inline))
+
 #if defined(__ARCH_x86_64__)
 #include <arch/x86_64/system.h>
 #endif

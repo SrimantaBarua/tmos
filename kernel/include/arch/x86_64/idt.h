@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <system.h>
 
 // The type flags for ISRs
 #define IDT_ATTR_PRESENT 0x80
@@ -38,11 +39,11 @@ void isr_set_gate(uint8_t num, void (*gate) (void), uint8_t ist, uint16_t seg, u
 void isr_unset_gate(uint8_t intnum);
 
 // Disable interrupts
-inline void idt_disable_int() {
+FORCEINLINE void idt_disable_int() {
 	__asm__ __volatile__ ("cli" : : : "memory");
 }
 
 // Enable interrupts
-inline void idt_enable_int() {
+FORCEINLINE void idt_enable_int() {
 	__asm__ __volatile__ ("sti" : : : "memory");
 }

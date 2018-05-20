@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <system.h>
+
 // MSR numbers
 #define MSR_EFER 0xC0000080
 
@@ -18,14 +20,14 @@
 #define MSR_EFER_TCE      (1 << 15)
 
 // Read an MSR
-inline uint64_t rdmsr(uint32_t num) {
+FORCEINLINE uint64_t rdmsr(uint32_t num) {
 	uint32_t eax, edx;
 	__asm__ __volatile__ ("rdmsr\n" : "=a"(eax), "=d"(edx) : "c"(num) : );
 	return ((uint64_t) edx << 32) | eax;
 }
 
 // Write an MSR
-inline void wrmsr(uint32_t num, uint64_t val) {
+FORCEINLINE void wrmsr(uint32_t num, uint64_t val) {
 	uint32_t eax, edx;
 	edx = (val >> 32) & 0xffffffff;
 	eax = val & 0xffffffff;

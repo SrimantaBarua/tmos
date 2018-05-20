@@ -18,6 +18,7 @@
 #pragma once
 
 #include <system.h>
+#include <stddef.h>
 
 // A memory map region entry
 typedef uint64_t region_t;
@@ -46,24 +47,24 @@ typedef uint64_t region_t;
 #define REGION_NEW(addr, typ) (((uint64_t) addr & PADDR_ALGN_MASK) | ((uint64_t) typ & __REGION_TYPE_MASK))
 
 // Set the start address of the region
-#define REGION_SET_START(r, addr) {                                \
-	(r) = ((r) & __REGION_TYPE_MASK) | (addr & PADDR_ALGN_MASK); \
-}
+#define REGION_SET_START(r, addr) do {                                \
+	(r) = ((r) & __REGION_TYPE_MASK) | (addr & PADDR_ALGN_MASK);  \
+} while (0)
 
 // Set type of region
-#define REGION_SET_TYPE(r, type) {                                       \
+#define REGION_SET_TYPE(r, type) do {                                \
 	(r) = ((r) & PADDR_ALGN_MASK) | (type & __REGION_TYPE_MASK); \
-}
+} while (0)
 
 // Set a region as managed
-#define REGION_SET_MANAGED(r) { \
+#define REGION_SET_MANAGED(r) do {  \
 	(r) |= REGION_FLAG_MANAGED; \
-}
+} while (0)
 
 // Set a region as unmanaged
-#define REGION_SET_UNMANAGED(r) { \
+#define REGION_SET_UNMANAGED(r) do { \
 	(r) &= ~REGION_FLAG_MANAGED; \
-}
+} while (0)
 
 
 // A memory map made up of an array of our regions, and the number of regions
@@ -118,3 +119,15 @@ extern struct pmmgr BM_SPL_PMMGR, BM_PMMGR;
 // Initialize the memory management subsystem with the given underlying physical memory manager
 // Also provide an optional callback for remapping in case required
 void mem_init(struct pmmgr *pmmgr, void (*remap_cb) (void));
+
+// Allocate a block of memory of the given size
+void* kmalloc(size_t size);
+
+// Allocate a block of memory of the given size, and zero it out
+void* kcalloc(size_t nmemb, size_t size);
+
+// Reallocate a block of memory to be of the given size, and copy the contents
+void* krealloc(void *ptr, size_t size);
+
+// Free allocated memory
+void kfree(void *ptr);

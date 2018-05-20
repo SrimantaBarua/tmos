@@ -210,10 +210,10 @@ static void _do_with_new_pml4(paddr_t pml4_frame, void (*fn) (void)) {
 	vmm_unmap (TEMP_VADDR, 1);
 }
 
-// Initialize the memory management subsystem with the given underlying physical memory manager
+// Initialize the virtual memory management subsystem with the given underlying pmmgr
 // Set up a new page table, with the callback provided (Panic if not provided)
 // Switch to the new address space
-void mem_init(struct pmmgr *pmmgr, void (*remap_cb) (void)) {
+void vmm_init(struct pmmgr *pmmgr, void (*remap_cb) (void)) {
 	paddr_t pml4_paddr;
 
 	ASSERT (!_PMMGR);

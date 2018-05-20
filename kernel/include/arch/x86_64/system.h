@@ -53,6 +53,14 @@ extern int __bss_end__;
 #define KRNL_BSS_START    __SYM_ADDR__(__kernel_bss_start__)
 #define KRNL_BSS_END      __SYM_ADDR__(__kernel_bss_end__)
 
+// From doc/memory_map_x86_64.txt
+#define KRNL_HEAP_START 0xffff800000000000
+#define KRNL_HEAP_SIZE  0x0000010000000000
+#define KRNL_HEAP_END   (KRNL_HEAP_START + KRNL_HEAP_END)
+#define KRNL_SLAB_START KRNL_HEAP_END
+#define KRNL_SLAB_SIZE  0x0000010000000000
+#define KRNL_SLAB_END   (KRNL_SLAB_START + KRNL_SLAB_SIZE)
+
 // Check if interrupts are enabled
 #define sys_int_enabled() (cpu_read_rflags ().f.IF == 1)
 
