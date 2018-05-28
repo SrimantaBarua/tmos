@@ -52,61 +52,61 @@
 #define CR8_TASK_PRIORITY_LEVEL_MASK 0x0F
 
 // Read CR0
-FORCEINLINE uint64_t read_cr0() {
+static inline uint64_t read_cr0() {
 	uint64_t ret;
 	__asm__ __volatile__ ("mov rax, cr0\n" : "=a"(ret) : : );
 	return ret;
 }
 
 // Write CR0
-FORCEINLINE uint64_t write_cr0(uint64_t val) {
+static inline uint64_t write_cr0(uint64_t val) {
 	__asm__ __volatile__ ("mov cr0, rdi\n" : : "D"(val) : "memory" );
 }
 
 // Read CR2
-FORCEINLINE uint64_t read_cr2() {
+static inline uint64_t read_cr2() {
 	uint64_t ret;
 	__asm__ __volatile__ ("mov rax, cr2\n" : "=a"(ret) : : );
 	return ret;
 }
 
 // Write CR2
-FORCEINLINE uint64_t write_cr2(uint64_t val) {
+static inline uint64_t write_cr2(uint64_t val) {
 	__asm__ __volatile__ ("mov cr2, rdi\n" : : "D"(val) : "memory" );
 }
 
 // Read the CR3 control register (PML4 address)
-FORCEINLINE uint64_t read_cr3() {
+static inline uint64_t read_cr3() {
 	uint64_t ret;
 	__asm__ __volatile__ ("mov rax, cr3\n" : "=a"(ret) : : );
 	return ret;
 }
 
 // Write the CR3 control register (PML4 address)
-FORCEINLINE uint64_t write_cr3(uint64_t val) {
+static inline uint64_t write_cr3(uint64_t val) {
 	__asm__ __volatile__ ("mov cr3, rdi\n" : : "D"(val) : "memory" );
 }
 
 // Read CR4
-FORCEINLINE uint64_t read_cr4() {
+static inline uint64_t read_cr4() {
 	uint64_t ret;
 	__asm__ __volatile__ ("mov rax, cr4\n" : "=a"(ret) : : );
 	return ret;
 }
 
 // Write CR4
-FORCEINLINE uint64_t write_cr4(uint64_t val) {
+static inline uint64_t write_cr4(uint64_t val) {
 	__asm__ __volatile__ ("mov cr4, rdi\n" : : "D"(val) : "memory" );
 }
 
 // Read CR8
-FORCEINLINE uint64_t read_cr8() {
+static inline uint64_t read_cr8() {
 	uint64_t ret;
 	__asm__ __volatile__ ("mov rax, cr8\n" : "=a"(ret) : : );
 	return ret;
 }
 
 // Write CR8
-FORCEINLINE uint64_t write_cr8(uint64_t val) {
+static inline uint64_t write_cr8(uint64_t val) {
 	__asm__ __volatile__ ("mov cr8, rdi\n" : : "D"(val) : "memory" );
 }

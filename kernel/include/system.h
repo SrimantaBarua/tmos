@@ -30,7 +30,7 @@
 #define PAGE_ALGN_DOWN(x) ROUND_DOWN (x, PAGE_SIZE)
 
 // Get if two entities are of the same type
-#define is_same_type(x, y) (typeof (x) == typeof (y))
+#define is_same_type(x, y) __builtin_types_compatible_p (typeof (x), typeof (y))
 
 // Get offset of struct member
 #define offset_of(type, member) ((size_t) (&((type *) 0)->member))
@@ -39,4 +39,4 @@
 #define container_of(ptr, type, member) ({ \
 	void *__mptr = (void*) (ptr);      \
 	STATIC_ASSERT (is_same_type (*(ptr), ((type *) 0)->member)); \
-	((type *) (_mptr - offset_of (type, member))); })
+	((type *) (__mptr - offset_of (type, member))); })

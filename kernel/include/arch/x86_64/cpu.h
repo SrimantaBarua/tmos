@@ -39,23 +39,23 @@ union rflags {
 };
 
 // Read the RFLAGS register
-FORCEINLINE union rflags cpu_read_rflags() {
+static inline union rflags cpu_read_rflags() {
 	union rflags ret;
 	__asm__ __volatile__ ("pushfq; pop rax;" : "=a"(ret.raw) : : );
 	return ret;
 }
 
 // Write the RFLAGS register
-FORCEINLINE void cpu_write_rflags(union rflags flags) {
+static inline void cpu_write_rflags(union rflags flags) {
 	__asm__ __volatile__ ("push rdi; popfq" : : "D"(flags.raw) : "memory" );
 }
 
 // Enable exec protection, so that we can't execute code from pages marked NO_EXEC
-FORCEINLINE void set_nx() {
+static inline void set_nx() {
 	wrmsr (MSR_EFER, rdmsr (MSR_EFER) | MSR_EFER_NXE);
 }
 
 // Enable write protection, so that we can't write to pages unless marked WRITABLE
-FORCEINLINE void set_write_protect() {
+static inline void set_write_protect() {
 	write_cr0 (read_cr0 () | CR0_WRITE_PROTECT);
 }
