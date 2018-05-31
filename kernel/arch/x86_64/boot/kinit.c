@@ -119,6 +119,9 @@ void kinit_multiboot2(vaddr_t pointer) {
 	// Write the string
 	strcpy (str, "Hello, world!\n");
 
+	// Free string
+	kfree (str);
+
 	vmm_map_to (0xb8000, 0xb8000, 1, PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
 	uint64_t *ptr = (uint64_t*) 0xb8000;
 	*ptr = 0x2f592f412f4b2f4f;

@@ -124,7 +124,7 @@ static struct heap_chunk* _chunk_split_front(struct heap_chunk **chunk, word_t l
 	left = *chunk;
 	right = (struct heap_chunk *) ((void*) left + left_memsz + (WORD_SIZE >> 3));
 	right->memsz = _chunk_memsz (left) - left_memsz - (WORD_SIZE >> 3);
-	left->memsz = left_memsz | (left->memsz & (sizeof (word_t) - 1));
+	left->memsz = left_memsz | (left->memsz & 7);
 	_chunk_footer (left)->memsz = left_memsz;
 	_chunk_footer (right)->memsz = _chunk_memsz (right);
 	list_add_front (&left->list, &right->list);
@@ -139,7 +139,7 @@ static struct heap_chunk* _chunk_split_rear(struct heap_chunk *chunk, word_t lef
 	left = chunk;
 	right = (struct heap_chunk *) ((void*) left + left_memsz + (WORD_SIZE >> 3));
 	right->memsz = _chunk_memsz (left) - left_memsz - (WORD_SIZE >> 3);
-	left->memsz = left_memsz | (left->memsz & (sizeof (word_t) - 1));
+	left->memsz = left_memsz | (left->memsz & 7);
 	_chunk_footer (left)->memsz = left_memsz;
 	_chunk_footer (right)->memsz = _chunk_memsz (right);
 	list_add_front (&left->list, &right->list);
@@ -260,11 +260,8 @@ static word_t _get_size(size_t req) {
 }
 
 // Get bin index for given request size
-static size_t _get_bin_idx(size_t req) {
-	word_t binsz;
+static size_t _get_bin_idx(size_t binsz) {
 	size_t base = 0;
-	// Get bin size
-	binsz = _get_size (req);
 	if (binsz <= INC8_END) {
 		return (binsz >> 3) - 1;
 	}
@@ -297,6 +294,11 @@ static struct {
 	struct heap_chunk *last;
 } _heap;
 
+// Get current end of heap
+static void* _heap_cur_end() {
+	return (void*) _heap.last + (WORD_SIZE >> 3) + _heap.last->memsz;
+}
+
 // Initialize the kernel heap
 void heap_init() {
 	// We know brk is initially at the beginning of the heap. So allocate one page
@@ -316,7 +318,7 @@ void* kmalloc(size_t size) {
 		return NULL;
 	}
 	// Get bin index for size. TODO: Handle larger requests
-	bindx = _get_bin_idx (size);
+	bindx = _get_bin_idx (_get_size (size));
 	// Check if bin has free nodes. If yes, allocate
 	if (!list_is_empty (&_bins[bindx].head.list)) {
 		// First chunk in list
@@ -326,7 +328,6 @@ void* kmalloc(size_t size) {
 			_chunk_set_prev_used (_chunk_addr_next (chunk));
 		}
 		list_del (&chunk->list);
-		memset ((void*) chunk + (WORD_SIZE >> 3), 0, _chunk_memsz (chunk));
 		return (void*) chunk + (WORD_SIZE >> 3);
 	}
 	// No free nodes. Break off from last chunk. Check if it is big enough
@@ -337,7 +338,7 @@ void* kmalloc(size_t size) {
 	}
 	// Enough space in last chunk. Break off
 	chunk = _chunk_split_front (&_heap.last, _bins[bindx].memsz);
-	memset ((void*) chunk + (WORD_SIZE >> 3), 0, _chunk_memsz (chunk));
+	_chunk_set_used (chunk);
 	return (void*) chunk + (WORD_SIZE >> 3);
 }
 
@@ -359,4 +360,18 @@ void* krealloc(void *ptr, size_t size);
 
 // Free allocated memory
 void kfree(void *ptr) {
+	struct heap_chunk *chunk;
+	struct heap_footer *footer;
+	size_t bindx;
+	ASSERT ((uintptr_t) ptr > KRNL_HEAP_START && ptr < _heap_cur_end ());
+	chunk = (struct heap_chunk*) (ptr - (WORD_SIZE >> 3));
+	if (!_chunk_is_used (chunk)) {
+		PANIC ("Attempt to free unallocated memory\n");
+	}
+	bindx = _get_bin_idx (_chunk_memsz (chunk));
+	// Free the chunk and add to beginning of bin list
+	_chunk_set_free (chunk);
+	footer = _chunk_footer (chunk);
+	footer->memsz = _chunk_memsz (chunk);
+	list_add_front (&_bins[bindx].head.list, &chunk->list);
 }
