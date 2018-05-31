@@ -22,6 +22,5 @@
 		}                                                              \
 	} while (0)
 
-
 // Check condition at compile-time
 #define STATIC_ASSERT(cond) STATIC_ASSERT_MSG (cond, "Assertion failed: " #cond)
