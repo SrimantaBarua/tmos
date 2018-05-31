@@ -20,6 +20,8 @@
 #include <system.h>
 #include <stddef.h>
 
+// -------- MEMORY REGIONS --------
+
 // A memory map region entry
 typedef uint64_t region_t;
 
@@ -89,6 +91,7 @@ void mmap_split_at(struct mmap *map, uint64_t addr);
 // Print the memory map
 void mmap_print(const struct mmap *map);
 
+// -------- PHYSICAL MEMORY MANAGER --------
 
 // Interface for a physical memory manager
 struct pmmgr {
@@ -115,10 +118,10 @@ struct pmmgr {
 // Known physical memory managers
 extern struct pmmgr BM_SPL_PMMGR, BM_PMMGR;
 
+// -------- KERNEL HEAP --------
 
-// Initialize the memory management subsystem with the given underlying physical memory manager
-// Also provide an optional callback for remapping in case required
-void mem_init(struct pmmgr *pmmgr, void (*remap_cb) (void));
+// Initialize the kernel heap
+void heap_init();
 
 // Allocate a block of memory of the given size
 void* kmalloc(size_t size);
@@ -131,3 +134,6 @@ void* krealloc(void *ptr, size_t size);
 
 // Free allocated memory
 void kfree(void *ptr);
+
+// Increment/decrement the end of the kernel heap and return a pointer to the previous address
+void* ksbrk(intptr_t increment);

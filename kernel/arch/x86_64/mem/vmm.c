@@ -65,7 +65,11 @@ struct ptable {
 #define PT_CHILD(parent, idx) \
 	((struct ptable*) ((((vaddr_t) (parent) << 9) | 0xffff000000000000) | ((idx) << 12)))
 
+// The underlying physical memory manager
 static struct pmmgr *_PMMGR = NULL;
+
+// Pointer to the current end of the kernel heap
+static void *_brkptr = (void*) KRNL_HEAP_START;
 
 // Returns the child table. If not present, or huge, return NULL
 static struct ptable* _pt_child(const struct ptable *tab, uint64_t idx) {
@@ -351,6 +355,26 @@ void vmm_map_to(vaddr_t vaddr, paddr_t paddr, uint64_t n, uint64_t flags) {
 // Unmap n virtual memory pages
 void vmm_unmap(vaddr_t vaddr, uint64_t n) {
 	_do_free (vaddr, n, false);
+}
+
+// Increment/decrement the end of the kernel heap and return a pointer to the previous address
+// We need increment to be page aligned
+void* ksbrk(intptr_t increment) {
+	uint64_t diff;
+	void *ret = _brkptr;
+	if (increment > 0) {
+		ASSERT (IS_ALIGNED (increment, PAGE_SIZE));
+		ASSERT ((vaddr_t) _brkptr + increment <= KRNL_HEAP_END);
+		diff = (uint64_t) increment;
+		vmm_map ((vaddr_t) _brkptr, diff >> PAGE_SIZE_SHIFT, PTE_FLG_WRITABLE);
+		_brkptr += diff;
+		return ret;
+	}
+	diff = (uint64_t) (-increment);
+	ASSERT (IS_ALIGNED (diff, PAGE_SIZE));
+	vmm_free ((vaddr_t) _brkptr - diff, diff >> PAGE_SIZE_SHIFT);
+	_brkptr -= diff;
+	return ret;
 }
 
 // Print the page table structure
