@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #ifndef __HAS_ARCH_MEMCPY__
 void* memcpy(void *dest, const void *src, size_t n) {
@@ -70,7 +71,6 @@ int memcmp(const void *aptr, const void *bptr, size_t n) {
 }
 #endif
 
-#ifndef __HAS_ARCH_STRLEN__
 size_t strlen(const char *s) {
 	size_t ret = 0;
 	if (s) {
@@ -80,4 +80,136 @@ size_t strlen(const char *s) {
 	}
 	return ret;
 }
-#endif
+
+char* strcpy(char *dest, const char *src) {
+	char *ret = dest;
+	if (src && dest) {
+		while (*src) {
+			*dest++ = *src++;
+		}
+	}
+	return ret;
+}
+
+char* strncpy(char *dest, const char *src, size_t n) {
+	char *ret = dest;
+	size_t i = 0;
+	if (src && dest) {
+		while (*src && i < n) {
+			*dest++ = *src++;
+			i++;
+		}
+	}
+	return ret;
+}
+
+char* strcat(char *dest, const char *src) {
+	strcpy (dest + strlen (dest), src);
+	return dest;
+}
+
+char* strncat(char *dest, const char *src, size_t n) {
+	size_t len = strlen (dest);
+	if (len < n) {
+		strncpy (dest + len, src, n - len);
+	}
+	return dest;
+}
+
+int strcmp(const char *a, const char *b) {
+	if (a && b) {
+		while (*a && *b) {
+			if (*a != *b) {
+				return (int) *a - (int) *b;
+			}
+			a++;
+			b++;
+		}
+		return (int) *a - (int) *b;
+	}
+	return 0;
+}
+
+int stricmp(const char *a, const char *b) {
+	char tmpa, tmpb;
+	if (a && b) {
+		while (*a && *b) {
+			tmpa = tolower (*a);
+			tmpb = tolower (*b);
+			if (tmpa != tmpb) {
+				return (int) tmpa - (int) tmpb;
+			}
+			a++;
+			b++;
+		}
+		return (int) tolower (*a) - (int) tolower (*b);
+	}
+	return 0;
+}
+
+int strncmp(const char *a, const char *b, size_t n) {
+	size_t i = 0;
+	if (a && b) {
+		while (*a && *b && i < n) {
+			if (*a != *b) {
+				return (int) *a - (int) *b;
+			}
+			a++;
+			b++;
+			i++;
+		}
+		if (i == n) {
+			return 0;
+		}
+		return (int) *a - (int) *b;
+	}
+	return 0;
+}
+
+int strnicmp(const char *a, const char *b, size_t n) {
+	size_t i = 0;
+	char tmpa, tmpb;
+	if (a && b) {
+		while (*a && *b && i < n) {
+			tmpa = (char) tolower (*a);
+			tmpb = (char) tolower (*b);
+			if (tmpa != tmpb) {
+				return (int) tmpa - (int) tmpb;
+			}
+			a++;
+			b++;
+			i++;
+		}
+		if (i == n) {
+			return 0;
+		}
+		return (int) tolower (*a) - (int) tolower (*b);
+	}
+	return 0;
+}
+
+char* strchr(const char *s, char c) {
+	if (s) {
+		while (*s) {
+			if (*s == c) {
+				return (char*) s;
+			}
+			s++;
+		}
+	}
+	return NULL;
+}
+
+char* strrchr(const char *s, char c) {
+	const char *optr = s;
+	if (s) {
+		s += strlen (s) - 1;
+		while (s >= optr) {
+			if (*s == c) {
+				return (char*) s;
+			}
+			s--;
+		}
+	}
+	return NULL;
+}
