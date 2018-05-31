@@ -5,11 +5,12 @@
 
 #include <stdint.h>
 #include <serial.h>
+#include <string.h>
 #include <multiboot2.h>
 #include <memory.h>
 #include <elf.h>
-#include <arch/x86_64/memory.h>
 #include <klog.h>
+#include <arch/x86_64/memory.h>
 #include <arch/x86_64/idt.h>
 #include <arch/x86_64/gdt.h>
 
@@ -18,6 +19,11 @@ extern int __guard_page__;
 
 // The kernel's memory map
 static struct mmap _KMMAP = { 0 };
+
+// Function prototypes
+static void _init_mem_mngr();
+
+// -------- MULTIBOOT2 --------
 
 // Callback for remapping the kernel in case we're loaded by multiboot2
 static void _remap_cb_multiboot2() {
@@ -53,7 +59,6 @@ static void _remap_cb_multiboot2() {
 		klog ("{ SECTION: addr: %#llx, flags: %#llx, len: %#llx }\n",
 		      shdr->sh_addr, shdr->sh_flags, shdr->sh_size);
 		shdr++;
-
 	}
 	// Identity map multiboot2 table (since we're not done with it yet)
 	for (i = 0; REGION_START (_KMMAP.r[i]); i++) {
@@ -73,10 +78,12 @@ static void _remap_cb_multiboot2() {
 // bootloader. Perform initialization and set up state to the point where we can hand off to
 // common kernel code
 void kinit_multiboot2(vaddr_t pointer) {
-	uint32_t first = UINT32_MAX, tot, i;
-
 	// Initialize serial communication
 	serial_init ();
+
+	// Initialize and enable interrupts
+	gdt_init ();
+	idt_init ();
 
 	// Load multiboot2 information table
 	if (mb2_table_load (pointer) < 0) {
@@ -89,15 +96,43 @@ void kinit_multiboot2(vaddr_t pointer) {
 	// Mark region for kernel
 	mmap_insert_region (&_KMMAP, PAGE_ALGN_DOWN (KRNL_PHYS_START),
 			PAGE_ALGN_UP (KRNL_PHYS_END), REGION_TYPE_KERNEL);
-
 	// Print memory map
 	mmap_print (&_KMMAP);
 
-	// Initialize and enable interrupts
-	gdt_init ();
-	idt_init ();
+	// Initialize memory management
+	_init_mem_mngr ();
 
-	// Initialize memory allocator
+	vmm_map (0x2000, 1, PTE_FLG_WRITABLE);
+	uint64_t *iptr = (uint64_t*) 0x2000;
+	*iptr = 5;
+
+	vmm_print_ptable ();
+
+	// Kmalloc space for a string
+	int i;
+	for (i = 0; i < 8; i++) {
+		klog ("kmalloc #%d\n", i);
+		kmalloc (1000);
+	}
+	char *str = kmalloc (1000);
+
+	// Write the string
+	strcpy (str, "Hello, world!\n");
+
+	vmm_map_to (0xb8000, 0xb8000, 1, PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
+	uint64_t *ptr = (uint64_t*) 0xb8000;
+	*ptr = 0x2f592f412f4b2f4f;
+	crash_and_burn ();
+}
+
+
+// -------- COMMON --------
+
+// Initialize memory management
+static void _init_mem_mngr() {
+	uint32_t first = UINT32_MAX, tot, i;
+
+	// Initialize physical memory allocator
 	for (tot = 0; tot < MMAP_MAX_NUM_ENTRIES; tot++) {
 		if (REGION_TYPE (_KMMAP.r[tot]) == REGION_TYPE_AVAIL && first == UINT32_MAX) {
 			first = tot - 1;
@@ -108,19 +143,8 @@ void kinit_multiboot2(vaddr_t pointer) {
 		}
 	}
 	BM_PMMGR.init (&_KMMAP.r[first], tot, 0x1000000, PADDR_ALGN_MASK);
-
-	// Initialize memory management
-	mem_init (&BM_PMMGR, _remap_cb_multiboot2);
-
-	// Print current page table structure
-	vmm_print_ptable ();
-
-	vmm_map (0x2000, 1, PTE_FLG_WRITABLE);
-	uint64_t *iptr = (uint64_t*) 0x2000;
-	*iptr = 5;
-
-	vmm_map_to (0xb8000, 0xb8000, 1, PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
-	uint64_t *ptr = (uint64_t*) 0xb8000;
-	*ptr = 0x2f592f412f4b2f4f;
-	crash_and_burn ();
+	// Initialize virtual memory manager
+	vmm_init (&BM_PMMGR, _remap_cb_multiboot2);
+	// Initialize heap allocator
+	heap_init ();
 }
