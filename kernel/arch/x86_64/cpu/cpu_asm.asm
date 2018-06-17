@@ -2,18 +2,9 @@
 
 [BITS 64]
 
-global crash_and_burn
 global set_cs
 
-
-; Stop forever
-section .text.crash_and_burn
-crash_and_burn:
-	cli
-	hlt
-	jmp	crash_and_burn
-
-
+; Set the CS segment register
 section .text.set_cs
 set_cs:
 	and	rdi, 0xffff

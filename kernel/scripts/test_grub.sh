@@ -10,9 +10,9 @@ kernel="shuos.kernel"
 serial_file="serial.log"
 serial_cmd="-serial file:$serial_file"
 
-function grub_run() {
-mkdir -p isodir/boot/grub
-cat > isodir/boot/grub/grub.cfg << EOF
+grub_run() {
+	mkdir -p isodir/boot/grub
+	cat > isodir/boot/grub/grub.cfg << EOF
 set timeout=0
 set default=0
 menuentry "shuos" {
@@ -21,14 +21,14 @@ menuentry "shuos" {
 	boot
 }
 EOF
-cp $kernel isodir/boot/
-gzip isodir/boot/$kernel -f
-grub-mkrescue -o $iso isodir -d /usr/lib/grub/i386-pc
-qemu-system-x86_64 $iso $serial_cmd -no-reboot -d int
+	cp $kernel isodir/boot/
+	gzip isodir/boot/$kernel -f
+	grub-mkrescue -o $iso isodir -d /usr/lib/grub/i386-pc
+	qemu-system-x86_64 $iso $serial_cmd -no-reboot -d int --enable-kvm -cpu host
 }
 
-function grub_clean() {
-rm -rf $iso $kernel $serial_file isodir
+grub_clean() {
+	rm -rf $iso $kernel $serial_file isodir
 }
 
 case "$1" in
