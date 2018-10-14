@@ -14,36 +14,36 @@ typedef uint32_t spin_t;
 
 #ifndef __CFG_SMP__
 
-	// Acquire a spinlock
-	static inline void spin_lock(spin_t *lock) {
-		if (sys_int_enabled ()) {
-			sys_disable_int ();
-			*lock = 1;
-		}
+// Acquire a spinlock
+static inline void spin_lock(spin_t *lock) {
+	if (sys_int_enabled()) {
+		sys_disable_int();
+		*lock = 1;
 	}
+}
 
-	// Acquire a spinlock, disabling interrupts when it has been acquired
-	static inline void spin_lock_intsafe(spin_t *lock) {
-		spin_lock (lock);
-	}
+// Acquire a spinlock, disabling interrupts when it has been acquired
+static inline void spin_lock_intsafe(spin_t *lock) {
+	spin_lock(lock);
+}
 
-	// Release a spinlock. If interrupts were enabled before locking, enable interrupts
-	static inline void spin_unlock(spin_t *lock) {
-		if (*lock) {
-			*lock = 0;
-			sys_enable_int ();
-		}
+// Release a spinlock. If interrupts were enabled before locking, enable interrupts
+static inline void spin_unlock(spin_t *lock) {
+	if (*lock) {
+		*lock = 0;
+		sys_enable_int();
 	}
+}
 
 #else
 
-	// Acquire a spinlock
-	void spin_lock(spin_t *lock);
+// Acquire a spinlock
+void spin_lock(spin_t *lock);
 
-	// Acquire a spinlock, disabling interrupts when it has been acquired
-	void spin_lock_intsafe(spin_t *lock);
+// Acquire a spinlock, disabling interrupts when it has been acquired
+void spin_lock_intsafe(spin_t *lock);
 
-	// Release a spinlock
-	void spin_unlock(spin_t *lock);
+// Release a spinlock
+void spin_unlock(spin_t *lock);
 
 #endif

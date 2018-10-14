@@ -31,19 +31,19 @@ void gdt_init() {
 	uint16_t cs, ds;
 	_next = 1;
 	// Add kernel code segment
-	cs = gdt_add_seg (KRNL_CODE_SEGMENT);
+	cs = gdt_add_seg(KRNL_CODE_SEGMENT);
 	// Add kernel data segment
-	ds = gdt_add_seg (KRNL_DATA_SEGMENT);
+	ds = gdt_add_seg(KRNL_DATA_SEGMENT);
 	// Add user code segment
-	gdt_add_seg (USER_CODE_SEGMENT);
+	gdt_add_seg(USER_CODE_SEGMENT);
 	// Add user data segment
-	gdt_add_seg (USER_DATA_SEGMENT);
+	gdt_add_seg(USER_DATA_SEGMENT);
 	// Load GDTR
 	_gdtr.limit = (_next << 3) - 1;
 	_gdtr.base = (uint64_t) _buf;
-	_lgdt ((uint64_t) &_gdtr);
+	_lgdt((uint64_t) &_gdtr);
 	// Set CS
-	set_cs (cs);
+	set_cs(cs);
 	// Set DS
 	__asm__ __volatile__ ("mov ds, ax; mov ss, ax;" : : "a"(ds) : "memory");
 }

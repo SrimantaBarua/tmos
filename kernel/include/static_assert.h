@@ -16,11 +16,11 @@
 #define STATIC_ASSERT_MSG(cond, msg)                                           \
 	do {                                                                   \
 		bool __cond = !(cond);                                         \
-		extern void compiletime_error(void) __compiletime_error (msg); \
+		extern void compiletime_error(void) __compiletime_error(msg); \
 		if (__cond) {                                                  \
 			compiletime_error();                                   \
 		}                                                              \
 	} while (0)
 
 // Check condition at compile-time
-#define STATIC_ASSERT(cond) STATIC_ASSERT_MSG (cond, "Assertion failed: " #cond)
+#define STATIC_ASSERT(cond) STATIC_ASSERT_MSG(cond, "Assertion failed: " #cond)

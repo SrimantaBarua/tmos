@@ -59,13 +59,13 @@ extern int __bss_end__;
 #define KRNL_HEAP_END   (KRNL_HEAP_START + KRNL_HEAP_SIZE)
 
 // Check if interrupts are enabled
-#define sys_int_enabled() (cpu_read_rflags ().f.IF == 1)
+#define sys_int_enabled() (cpu_read_rflags().f.IF == 1)
 
 // Disable interrupts
-#define sys_disable_int() idt_disable_int ()
+#define sys_disable_int() idt_disable_int()
 
 // Enable interrupts
-#define sys_enable_int() idt_enable_int ()
+#define sys_enable_int() idt_enable_int()
 
 // Stop forever
 NORETURN void crash_and_burn();

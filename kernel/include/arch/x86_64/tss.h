@@ -47,6 +47,6 @@ extern char __tss_buf[];
 
 // Get pointer to nth TSS
 struct tss* tss_get_n(uint32_t n) {
-	ASSERT (n < __MAX_NUM_TSS__);
+	ASSERT(n < __MAX_NUM_TSS__);
 	return (struct tss*) (__tss_buf + (n * __BYTES_PER_TSS__));
 }

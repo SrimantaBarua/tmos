@@ -38,4 +38,4 @@ struct bitmap {
 
 // Get size of bitmap in bytes
 #define BM_SZ(bm) \
-	((ROUND_UP ((bm).num_bits, WORD_SIZE)) >> 3)
+	((ROUND_UP((bm).num_bits, WORD_SIZE)) >> 3)

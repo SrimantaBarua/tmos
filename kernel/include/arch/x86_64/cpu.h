@@ -52,10 +52,10 @@ static inline void cpu_write_rflags(union rflags flags) {
 
 // Enable exec protection, so that we can't execute code from pages marked NO_EXEC
 static inline void set_nx() {
-	wrmsr (MSR_EFER, rdmsr (MSR_EFER) | MSR_EFER_NXE);
+	wrmsr(MSR_EFER, rdmsr(MSR_EFER) | MSR_EFER_NXE);
 }
 
 // Enable write protection, so that we can't write to pages unless marked WRITABLE
 static inline void set_write_protect() {
-	write_cr0 (read_cr0 () | CR0_WRITE_PROTECT);
+	write_cr0(read_cr0() | CR0_WRITE_PROTECT);
 }

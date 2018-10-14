@@ -18,7 +18,7 @@
 
 static int _skip_atoi(const char **s) {
 	int ret = 0;
-	while (isdigit (**s)) {
+	while (isdigit(**s)) {
 		ret = ret * 10 + (**s - '0');
 		(*s)++;
 	}
@@ -179,12 +179,12 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 		}
 		// Get field width
 		field_width = -1;
-		if (isdigit (*fmt)) {
-			field_width = _skip_atoi (&fmt);
+		if (isdigit(*fmt)) {
+			field_width = _skip_atoi(&fmt);
 		} else if (*fmt == '*') {
 			fmt++;
 			// Next argument is width
-			field_width = va_arg (ap, int);
+			field_width = va_arg(ap, int);
 			if (field_width < 0) {
 				field_width = -field_width;
 				flags |= LEFT;
@@ -194,12 +194,12 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 		precision = -1;
 		if (*fmt == '.') {
 			fmt++;
-			if (isdigit (*fmt)) {
-				precision = _skip_atoi (&fmt);
+			if (isdigit(*fmt)) {
+				precision = _skip_atoi(&fmt);
 			} else if (*fmt == '*') {
 				fmt++;
 				// Next argument is precision
-				precision = va_arg (ap, int);
+				precision = va_arg(ap, int);
 			}
 			if (precision < 0) {
 				precision = 0;
@@ -226,7 +226,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 					str++;
 				}
 			}
-			c = (char) va_arg (ap, int);
+			c = (char) va_arg(ap, int);
 			if (str <= end) {
 				*str = c;
 			}
@@ -239,11 +239,11 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 			}
 			continue;
 		case 's':
-			s = va_arg (ap, const char *);
+			s = va_arg(ap, const char *);
 			if ((uintptr_t) s < PAGE_SIZE) {
 				s = "(null)";
 			}
-			slen = strlen (s);
+			slen = strlen(s);
 			if (!(flags & LEFT)) {
 				while (slen < field_width--) {
 					if (str <= end) {
@@ -262,10 +262,10 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 			continue;
 		case 'p':
 			if  (field_width == -1) {
-				field_width = 2 * sizeof (void*);
+				field_width = 2 * sizeof(void*);
 				flags |= ZEROPAD;
 			}
-			str = _number (str, end, (unsigned long long) va_arg (ap, void*),
+			str = _number(str, end, (unsigned long long) va_arg(ap, void*),
 					16, field_width, precision, flags);
 			continue;
 		case '%':
@@ -307,26 +307,26 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 			continue;
 		}
 		if (qualifier == 'L') {
-			num = va_arg (ap, unsigned long long);
+			num = va_arg(ap, unsigned long long);
 		} else if (qualifier == 'l') {
-			num = (unsigned long) va_arg (ap, unsigned long);
+			num = (unsigned long) va_arg(ap, unsigned long);
 			if (flags & SIGN) {
 				num = (signed long) num;
 			}
 		} else if (qualifier == 'Z' || qualifier == 'z') {
-			num = va_arg (ap, size_t);
+			num = va_arg(ap, size_t);
 		} else if (qualifier == 'h') {
-			num = (unsigned short) va_arg (ap, int);
+			num = (unsigned short) va_arg(ap, int);
 			if (flags & SIGN) {
 				num = (signed short) num;
 			}
 		} else {
-			num = (unsigned int) va_arg (ap, unsigned int);
+			num = (unsigned int) va_arg(ap, unsigned int);
 			if (flags & SIGN) {
 				num = (signed int) num;
 			}
 		}
-		str = _number (str, end, num, base, field_width, precision, flags);
+		str = _number(str, end, num, base, field_width, precision, flags);
 	}
 	if (str <= end) {
 		*str = '\0';
@@ -337,23 +337,23 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 }
 
 int vsprintf(char *buf, const char *fmt, va_list ap) {
-	return vsnprintf (buf, SIZE_MAX, fmt, ap);
+	return vsnprintf(buf, SIZE_MAX, fmt, ap);
 }
 
 int sprintf(char *buf, const char *fmt, ...) {
 	int ret;
 	va_list ap;
-	va_start (ap, fmt);
-	ret = vsprintf (buf, fmt, ap);
-	va_end (ap);
+	va_start(ap, fmt);
+	ret = vsprintf(buf, fmt, ap);
+	va_end(ap);
 	return ret;
 }
 
 int snprintf(char *buf, size_t size, const char *fmt, ...) {
 	int ret;
 	va_list ap;
-	va_start (ap, fmt);
-	ret = vsnprintf (buf, size, fmt, ap);
-	va_end (ap);
+	va_start(ap, fmt);
+	ret = vsnprintf(buf, size, fmt, ap);
+	va_end(ap);
 	return ret;
 }

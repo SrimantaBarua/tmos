@@ -33,7 +33,7 @@ const struct mb2_tag* mb2_get_tag(uint32_t type) {
 	if (!MB2TAB) {
 		return NULL;
 	}
-	ret = (const struct mb2_tag*) (((void*) MB2TAB) + sizeof (struct mb2_table));
+	ret = (const struct mb2_tag*) (((void*) MB2TAB) + sizeof(struct mb2_table));
 	while (ret && ret->type) {
 		if (ret->type == type) {
 			return ret;
@@ -63,15 +63,15 @@ static void _fill_mmap(struct mb2_mmap_region *mb2, uint32_t mb2_len, struct mma
 	uint32_t i, type;
 	uint64_t start, end;
 	for (i = 0; i < mb2_len; i++) {
-		type = _cvt_mb2_mmap_typ (MB2_MREG_TYPE (mb2[i]));
+		type = _cvt_mb2_mmap_typ(MB2_MREG_TYPE(mb2[i]));
 		if (type == REGION_TYPE_AVAIL) {
-			start = PAGE_ALGN_UP (mb2[i].start);
-			end = PAGE_ALGN_DOWN (MB2_MREG_END (mb2[i]));
+			start = PAGE_ALGN_UP(mb2[i].start);
+			end = PAGE_ALGN_DOWN(MB2_MREG_END(mb2[i]));
 		} else {
-			start = PAGE_ALGN_DOWN (mb2[i].start);
-			end = PAGE_ALGN_UP (MB2_MREG_END (mb2[i]));
+			start = PAGE_ALGN_DOWN(mb2[i].start);
+			end = PAGE_ALGN_UP(MB2_MREG_END(mb2[i]));
 		}
-		mmap_insert_region (regmap, start, end, type);
+		mmap_insert_region(regmap, start, end, type);
 	}
 }
 
@@ -82,29 +82,29 @@ void mem_load_mb2_mmap(struct mmap *regmap) {
 	uint32_t mb2_mmap_len, i;
 	uint64_t mb2tab_addr = (uint64_t) MB2TAB;
 
-	ASSERT (regmap);
+	ASSERT(regmap);
 
-	if (!(tag = (const struct mb2_tag_mmap*) mb2_get_tag (MB2_TAG_TYPE_MMAP))) {
-		PANIC ("BIOS memory map tag not found\n");
+	if (!(tag = (const struct mb2_tag_mmap*) mb2_get_tag(MB2_TAG_TYPE_MMAP))) {
+		PANIC("BIOS memory map tag not found\n");
 	}
-	mb2_mmap_len = (tag->size - sizeof (struct mb2_tag_mmap)) / tag->entsz;
-	mb2_mmap = (struct mb2_mmap_region*) (((void*) tag) + sizeof (struct mb2_tag_mmap));
+	mb2_mmap_len = (tag->size - sizeof(struct mb2_tag_mmap)) / tag->entsz;
+	mb2_mmap = (struct mb2_mmap_region*) (((void*) tag) + sizeof(struct mb2_tag_mmap));
 
-	klog ("MULTIBOOT2 MMAP REGIONS (%u): [\n", mb2_mmap_len);
+	klog("MULTIBOOT2 MMAP REGIONS (%u): [\n", mb2_mmap_len);
 	for (i = 0; i < mb2_mmap_len; i++) {
-		klog ("\t{ B: 0x%08llx | L: 0x%08llx | T: %d | A: %d }\n",
+		klog("\t{ B: 0x%08llx | L: 0x%08llx | T: %d | A: %d }\n",
 			mb2_mmap[i].start, mb2_mmap[i].len,
 			mb2_mmap[i].type, mb2_mmap[i]._rsvd);
 	}
-	klog ("]\n");
+	klog("]\n");
 
 	// Initialize the memory map with default value
 	regmap->r[0] = 0 | REGION_TYPE_NONE;
 
 	// Fill the mmap with mb2_mmap
-	_fill_mmap (mb2_mmap, mb2_mmap_len, regmap);
+	_fill_mmap(mb2_mmap, mb2_mmap_len, regmap);
 
 	// Mark region for multiboot2 table
-	mmap_insert_region (regmap, PAGE_ALGN_DOWN (mb2tab_addr),
-			PAGE_ALGN_UP (mb2tab_addr + MB2TAB->size), REGION_TYPE_MULTIBOOT2);
+	mmap_insert_region(regmap, PAGE_ALGN_DOWN(mb2tab_addr),
+			PAGE_ALGN_UP(mb2tab_addr + MB2TAB->size), REGION_TYPE_MULTIBOOT2);
 }

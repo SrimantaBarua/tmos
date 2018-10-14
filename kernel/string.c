@@ -21,7 +21,7 @@ void* memcpy(void *dest, const void *src, size_t n) {
 #ifndef __HAS_ARCH_MEMMOVE__
 void* memmove(void *dest, const void *src, size_t n) {
 	if ((uintptr_t) dest < (uintptr_t) src) {
-		return memcpy (dest, src, n);
+		return memcpy(dest, src, n);
 	}
 	char *d = (char *) dest;
 	const char *s = (const char *) src;
@@ -104,14 +104,14 @@ char* strncpy(char *dest, const char *src, size_t n) {
 }
 
 char* strcat(char *dest, const char *src) {
-	strcpy (dest + strlen (dest), src);
+	strcpy(dest + strlen(dest), src);
 	return dest;
 }
 
 char* strncat(char *dest, const char *src, size_t n) {
-	size_t len = strlen (dest);
+	size_t len = strlen(dest);
 	if (len < n) {
-		strncpy (dest + len, src, n - len);
+		strncpy(dest + len, src, n - len);
 	}
 	return dest;
 }
@@ -134,15 +134,15 @@ int stricmp(const char *a, const char *b) {
 	char tmpa, tmpb;
 	if (a && b) {
 		while (*a && *b) {
-			tmpa = tolower (*a);
-			tmpb = tolower (*b);
+			tmpa = tolower(*a);
+			tmpb = tolower(*b);
 			if (tmpa != tmpb) {
 				return (int) tmpa - (int) tmpb;
 			}
 			a++;
 			b++;
 		}
-		return (int) tolower (*a) - (int) tolower (*b);
+		return (int) tolower (*a) - (int) tolower(*b);
 	}
 	return 0;
 }
@@ -171,8 +171,8 @@ int strnicmp(const char *a, const char *b, size_t n) {
 	char tmpa, tmpb;
 	if (a && b) {
 		while (*a && *b && i < n) {
-			tmpa = (char) tolower (*a);
-			tmpb = (char) tolower (*b);
+			tmpa = (char) tolower(*a);
+			tmpb = (char) tolower(*b);
 			if (tmpa != tmpb) {
 				return (int) tmpa - (int) tmpb;
 			}
@@ -183,7 +183,7 @@ int strnicmp(const char *a, const char *b, size_t n) {
 		if (i == n) {
 			return 0;
 		}
-		return (int) tolower (*a) - (int) tolower (*b);
+		return (int) tolower (*a) - (int) tolower(*b);
 	}
 	return 0;
 }
@@ -203,7 +203,7 @@ char* strchr(const char *s, char c) {
 char* strrchr(const char *s, char c) {
 	const char *optr = s;
 	if (s) {
-		s += strlen (s) - 1;
+		s += strlen(s) - 1;
 		while (s >= optr) {
 			if (*s == c) {
 				return (char*) s;

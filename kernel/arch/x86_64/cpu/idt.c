@@ -68,29 +68,29 @@ static void _lidt(struct idt_ptr *idtr) {
 // Initialize the IDT with default handlers for ISRs
 void idt_init() {
 	uint8_t i;
-	isr_set_gate (0, isr_0, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (1, isr_1, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (2, isr_2, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (3, isr_3, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (4, isr_4, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (5, isr_5, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (6, isr_6, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (7, isr_7, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (8, isr_8, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (9, isr_9, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (10, isr_10, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (11, isr_11, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (12, isr_12, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (13, isr_13, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (14, isr_page_fault, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (16, isr_16, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (17, isr_17, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (18, isr_18, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (19, isr_19, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	isr_set_gate (20, isr_20, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
-	_IDTR.limit = sizeof (_IDT) - 1;
+	isr_set_gate(0, isr_0, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(1, isr_1, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(2, isr_2, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(3, isr_3, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(4, isr_4, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(5, isr_5, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(6, isr_6, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(7, isr_7, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(8, isr_8, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(9, isr_9, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(10, isr_10, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(11, isr_11, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(12, isr_12, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(13, isr_13, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(14, isr_page_fault, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(16, isr_16, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(17, isr_17, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(18, isr_18, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(19, isr_19, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	isr_set_gate(20, isr_20, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
+	_IDTR.limit = sizeof(_IDT) - 1;
 	_IDTR.base = (uint64_t) _IDT;
-	_lidt (&_IDTR);
+	_lidt(&_IDTR);
 }
 
 // Set an interrupt gate
@@ -146,8 +146,8 @@ void isr_common_c_handler(const struct int_regs *regs) {
 	} else {
 		str = "Unknown";
 	}
-	klog ("Interrupt: (%s)\n"
+	klog("Interrupt: (%s)\n"
 	      "CS: %#04x, RIP: %#016llx, SS: %#04x, RSP: %#016llx, Error: %#x\n",
 	      str, regs->cs, regs->rip, regs->ss, regs->rsp, regs->err_code);
-	crash_and_burn ();
+	crash_and_burn();
 }

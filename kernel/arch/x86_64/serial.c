@@ -64,42 +64,42 @@ static void _init_com(enum serial_port com_base, uint32_t baud_rate) {
 	uint16_t port = com_base;
 	uint16_t divisor = (uint16_t) (115200 / baud_rate);
 
-	outb (INT_EN (port), 0x00);
+	outb(INT_EN(port), 0x00);
 
-	outb (LINE_CTRL (port), LINE_CTRL_DLAB);
-	outb (DATA (port), (uint8_t) (divisor & 0xff));        
-	outb (INT_EN (port), (uint8_t) ((divisor >> 8) & 0xff));
-	outb (LINE_CTRL (port), LINE_CTRL_8BIT | LINE_CTRL_1STOP);
+	outb(LINE_CTRL(port), LINE_CTRL_DLAB);
+	outb(DATA(port), (uint8_t) (divisor & 0xff));        
+	outb(INT_EN(port), (uint8_t) ((divisor >> 8) & 0xff));
+	outb(LINE_CTRL(port), LINE_CTRL_8BIT | LINE_CTRL_1STOP);
 
-	outb (MODEM_CTRL (port), MODEM_CTRL_DTR | MODEM_CTRL_RTS | MODEM_CTRL_OUT2);
+	outb(MODEM_CTRL(port), MODEM_CTRL_DTR | MODEM_CTRL_RTS | MODEM_CTRL_OUT2);
 
-	inb (port); // Read data to reset things
+	inb(port); // Read data to reset things
 
 }
 
 // Check if the transmit queue is empty
 static bool _is_transmit_empty(enum serial_port com_base) {
 	uint16_t port = com_base;
-	return (inb (LINE_STATUS (port)) & LINE_STATUS_TRANS_EMPTY) != 0;
+	return (inb(LINE_STATUS(port)) & LINE_STATUS_TRANS_EMPTY) != 0;
 }
 
 // Initialize the serial connection interface
 void serial_init() {
-	_init_com (COM1, 115200); // COM1
+	_init_com(COM1, 115200); // COM1
 }
 
 // Write a byte on the given serial port
 void serial_write_byte(enum serial_port com_base, uint8_t byte) {
 	uint16_t port = com_base;
-	while (!_is_transmit_empty (com_base));
-	outb (port, byte);
+	while (!_is_transmit_empty(com_base));
+	outb(port, byte);
 }
 
 // Write a string to the given serial port
 void serial_write_str(enum serial_port com_base, const char *str) {
 	if (str) {
 		while (*str) {
-			serial_write_byte (com_base, (uint8_t) *str);
+			serial_write_byte(com_base, (uint8_t) *str);
 			str++;
 		}
 	}
