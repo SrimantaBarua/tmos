@@ -49,3 +49,6 @@
 	void *__mptr = (void*) (ptr);      \
 	is_same_type(*(ptr), ((type *) 0)->member); \
 	((type *) (__mptr - offset_of(type, member))); })
+
+// Stop forever
+NORETURN void crash_and_burn();

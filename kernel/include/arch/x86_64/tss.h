@@ -43,10 +43,10 @@ struct tss {
 #define __BYTES_PER_TSS__ 128
 
 // Buffer for TSSes
-extern char __tss_buf[];
+extern char __tss_buf[__MAX_NUM_TSS__ * __BYTES_PER_TSS__];
 
 // Get pointer to nth TSS
-struct tss* tss_get_n(uint32_t n) {
+static inline struct tss* tss_get_n(uint32_t n) {
 	ASSERT(n < __MAX_NUM_TSS__);
 	return (struct tss*) (__tss_buf + (n * __BYTES_PER_TSS__));
 }

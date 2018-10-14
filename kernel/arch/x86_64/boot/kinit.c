@@ -46,7 +46,7 @@ static void _remap_cb_multiboot2() {
 			continue;
 		}
 		// Check if page-aligned
-		ASSERT(!(shdr->sh_addr & (PAGE_SIZE - 1)) && !(shdr->sh_size & (PAGE_SIZE - 1)));
+		ASSERT(!(shdr->sh_addr & (PAGE_SIZE - 1)));
 		// Map section
 		flags = PTE_FLG_PRESENT;
 		if (shdr->sh_flags & SHF_WRITE) {
@@ -55,6 +55,9 @@ static void _remap_cb_multiboot2() {
 		if (!(shdr->sh_flags & SHF_EXEC)) {
 			flags |= PTE_FLG_NO_EXEC;
 		}
+		// Round up size to page size
+		PAGE_ALGN_UP(shdr->sh_size);
+		// Map
 		vmm_map_to(shdr->sh_addr, shdr->sh_addr - KRNL_VBASE, shdr->sh_size >> PAGE_SIZE_SHIFT, flags);
 		klog("{ SECTION: addr: %#llx, flags: %#llx, len: %#llx }\n",
 		     shdr->sh_addr, shdr->sh_flags, shdr->sh_size);

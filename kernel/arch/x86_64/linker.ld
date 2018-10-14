@@ -29,14 +29,12 @@ SECTIONS {
 		. = ALIGN(4K);
 		__rodata_end__ = .;
 	}
-
 	.data : AT(ADDR(.data) - __kernel_vbase__) {
 		__data_start__ = .;
 		*(.data*);
 		. = ALIGN(4K);
 		__data_end__ = .;
 	}
-
 	.bss : AT(ADDR(.bss) - __kernel_vbase__) {
 		__bss_start__ = .;
 		*(.bss*);

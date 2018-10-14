@@ -4,7 +4,7 @@
 #include <arch/x86_64/tss.h>
 
 // Buffer for holding TSS data
-char __tss_buf[ROUND_UP(__MAX_NUM_TSS__ * __BYTES_PER_TSS__, PAGE_SIZE)];
+char __tss_buf[__MAX_NUM_TSS__ * __BYTES_PER_TSS__] __attribute__ ((aligned(__BYTES_PER_TSS__)));
 
 // Stop forever
 NORETURN void crash_and_burn() {

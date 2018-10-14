@@ -66,6 +66,3 @@ extern int __bss_end__;
 
 // Enable interrupts
 #define sys_enable_int() idt_enable_int()
-
-// Stop forever
-NORETURN void crash_and_burn();
