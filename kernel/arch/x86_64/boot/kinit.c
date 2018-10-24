@@ -13,6 +13,7 @@
 #include <arch/x86_64/memory.h>
 #include <arch/x86_64/idt.h>
 #include <arch/x86_64/gdt.h>
+#include <arch/x86_64/dev/pit.h>
 
 // Guard page (defined in entry.asm)
 extern int __guard_page__;
@@ -87,6 +88,7 @@ void kinit_multiboot2(vaddr_t pointer) {
 	// Initialize and enable interrupts
 	gdt_init();
 	idt_init();
+	pit_start_counter(100);
 
 	// Load multiboot2 information table
 	if (mb2_table_load(pointer) < 0) {
@@ -125,6 +127,12 @@ void kinit_multiboot2(vaddr_t pointer) {
 	// Free string
 	kfree(str);
 
+	sys_enable_int();
+	while (1) {
+		klog("%lu\n", pit_get_ticks());
+		__asm__ __volatile__ ("hlt;" : : : );
+	}
+
 	vmm_map_to(0xb8000, 0xb8000, 1, PTE_FLG_PRESENT | PTE_FLG_WRITABLE);
 	uint64_t *ptr = (uint64_t*) 0xb8000;
 	*ptr = 0x2f592f412f4b2f4f;
@@ -136,7 +144,7 @@ void kinit_multiboot2(vaddr_t pointer) {
 
 // Initialize memory management
 static void _init_mem_mngr() {
-	uint32_t first = UINT32_MAX, tot, i;
+	uint32_t first = UINT32_MAX, tot;
 
 	// Initialize physical memory allocator
 	for (tot = 0; tot < MMAP_MAX_NUM_ENTRIES; tot++) {
