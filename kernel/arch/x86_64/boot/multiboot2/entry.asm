@@ -221,4 +221,5 @@ __guard_page__:
 global kernel_stack_bottom
 kernel_stack_bottom:
 	resb	0x4000		; 16 KB stack
+global kernel_stack_top
 kernel_stack_top:

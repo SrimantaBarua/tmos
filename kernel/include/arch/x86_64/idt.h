@@ -18,6 +18,22 @@
 #define IDT_ATTR_INT_16  0x06
 #define IDT_ATTR_TASK_32 0x05
 
+// Known hardware interrupts
+#define IRQ_TIMER 0x20
+#define IRQ_KBRD  0x21
+#define IRQ_RTC   0x28
+
+// Helpful macros for writing interrupt handlers
+#define ISR_PUSH_REGS \
+	__asm__ __volatile__ ("push rax; push rcx; push rdx; push rdi;" \
+			      "push rsi; push r8; push r9; push r10;" \
+			      "push r11; " : : : "memory" )
+
+#define ISR_POP_REGS \
+	__asm__ __volatile__ ("pop r11; pop r10; pop r9; pop r8; pop rsi;" \
+			      "pop rdi; pop rdx; pop rcx; pop rax;" \
+			      : : : "memory" )
+
 // The registers pushed on the stack by interrupt handlers
 struct int_regs {
 	// Scratch registers in the System V ABI

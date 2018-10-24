@@ -8,6 +8,7 @@
 #include <klog.h>
 #include <arch/x86_64/memory.h>
 #include <arch/x86_64/cpu.h>
+#include <arch/x86_64/idt.h>
 
 // A page table
 struct ptable {
@@ -214,6 +215,20 @@ static void _do_with_new_pml4(paddr_t pml4_frame, void (*fn) (void)) {
 	vmm_unmap(TEMP_VADDR, 1);
 }
 
+// Page fault handler
+// TODO: Be careful about the stack offsets. They are 8 less than what I think
+// they should be. This is weird.
+static void __attribute__((naked)) _isr_page_fault() {
+	ISR_PUSH_REGS;
+	__asm__ __volatile__ ("mov  rdi, cr2;"              // Fault address
+			      "mov  rsi, qword [rsp + 72];" // IP
+			      "mov  rdx, qword [rsp + 64];" // Error node
+			      "call vmm_page_fault_handler;"
+			      : : : "memory");
+	ISR_POP_REGS;
+	__asm__ __volatile__ ("add rsp, 8; iretq;" : : : "memory");
+}
+
 // Initialize the virtual memory management subsystem with the given underlying pmmgr
 // Set up a new page table, with the callback provided (Panic if not provided)
 // Switch to the new address space
@@ -242,6 +257,9 @@ void vmm_init(struct pmmgr *pmmgr, void (*remap_cb) (void)) {
 
 	// Switch to new address space
 	vmm_switch_addr_space(pml4_paddr);
+
+	// Set page fault handler
+	isr_set_gate(14, _isr_page_fault, 0, 0x08, IDT_ATTR_PRESENT | IDT_ATTR_INT_32);
 }
 
 // Switch address space to PML4 at given paddr, and return paddr of current PML4
