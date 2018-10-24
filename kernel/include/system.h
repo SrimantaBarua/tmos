@@ -10,12 +10,6 @@
 #define VERSION_MINOR 1
 #define VERISON_PATCH 0
 
-// Compiler options
-#define FORCEINLINE inline __attribute__ ((always_inline))
-#define NOINLINE    __attribute__ ((noinline))
-#define PACKED      __attribute__ ((packed))
-#define NORETURN    __attribute__ ((noreturn))
-
 #if defined(__CFG_ARCH_x86_64__)
 #include <arch/x86_64/system.h>
 #endif
@@ -51,4 +45,4 @@
 	((type *) (__mptr - offset_of(type, member))); })
 
 // Stop forever
-NORETURN void crash_and_burn();
+void __attribute__((noreturn)) crash_and_burn();

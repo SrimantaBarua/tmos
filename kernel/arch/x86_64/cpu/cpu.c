@@ -7,7 +7,7 @@
 char __tss_buf[__MAX_NUM_TSS__ * __BYTES_PER_TSS__] __attribute__ ((aligned(__BYTES_PER_TSS__)));
 
 // Stop forever
-NORETURN void crash_and_burn() {
+void __attribute__((noreturn)) crash_and_burn() {
 	while (1) {
 		__asm__ __volatile__ ("cli; hlt;" : : : "memory");
 	}

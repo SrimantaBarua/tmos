@@ -14,7 +14,7 @@ static uint64_t _next;
 static struct {
 	uint16_t limit;
 	uint64_t base;
-} PACKED _gdtr = {
+} __attribute__((packed)) _gdtr = {
 	.limit = 0,
 	.base = 0,
 };

@@ -40,13 +40,13 @@ struct idt_entry {
 	uint32_t base_high;
 
 	uint32_t _rsvd0_1;
-} PACKED;
+} __attribute__((packed));
 
 // Structure of an IDT pointer
 struct idt_ptr {
 	uint16_t limit;
 	uint64_t base;
-} PACKED;
+} __attribute__((packed));
 
 
 // TODO: This should probably be locked..
