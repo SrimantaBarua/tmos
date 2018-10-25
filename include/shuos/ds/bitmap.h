@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 
 // The bitmap structure
 struct bitmap {

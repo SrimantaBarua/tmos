@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 
 // Bits in CR0
 #define CR0_PROTECTED_MODE    (1 << 0)

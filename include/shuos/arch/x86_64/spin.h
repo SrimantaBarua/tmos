@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 
 // A spinlock
 typedef uint32_t spin_t;

@@ -5,7 +5,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <system.h>
 
 // Read a byte in from a port
 static inline uint8_t inb(uint16_t port) {

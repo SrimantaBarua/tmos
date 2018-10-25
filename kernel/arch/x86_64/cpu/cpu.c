@@ -1,7 +1,7 @@
 // (C) 2018 Srimanta Barua
 
-#include <arch/x86_64/cpu.h>
-#include <arch/x86_64/tss.h>
+#include <shuos/arch/x86_64/cpu.h>
+#include <shuos/arch/x86_64/tss.h>
 
 // Buffer for holding TSS data
 char __tss_buf[__MAX_NUM_TSS__ * __BYTES_PER_TSS__] __attribute__ ((aligned(__BYTES_PER_TSS__)));

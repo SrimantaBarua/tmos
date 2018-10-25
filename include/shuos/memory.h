@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 #include <stddef.h>
 
 // -------- MEMORY REGIONS --------

@@ -5,9 +5,9 @@
 #pragma once
 
 #include <stdint.h>
-#include <system.h>
-#include <arch/x86_64/ctrlreg.h>
-#include <arch/x86_64/msr.h>
+#include <shuos/system.h>
+#include <shuos/arch/x86_64/ctrlreg.h>
+#include <shuos/arch/x86_64/msr.h>
 
 // The CPU RFLAGS register
 union rflags {

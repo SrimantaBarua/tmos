@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <arch/x86_64/cpu.h>
-#include <arch/x86_64/idt.h>
+#include <shuos/arch/x86_64/cpu.h>
+#include <shuos/arch/x86_64/idt.h>
 
 // Paging and addresses
 #define PAGE_SIZE       4096

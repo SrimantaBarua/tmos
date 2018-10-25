@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 #include <stdint.h>
-#include <klog.h>
+#include <shuos/klog.h>
 
 // TSS structure
 struct tss {

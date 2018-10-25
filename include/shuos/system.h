@@ -4,14 +4,14 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <static_assert.h>
+#include <shuos/static_assert.h>
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
 #define VERISON_PATCH 0
 
 #if defined(__CFG_ARCH_x86_64__)
-#include <arch/x86_64/system.h>
+#include <shuos/arch/x86_64/system.h>
 #endif
 
 // Utility math

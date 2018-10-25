@@ -4,16 +4,16 @@
 // kernel
 
 #include <stdint.h>
-#include <serial.h>
+#include <shuos/serial.h>
 #include <string.h>
-#include <multiboot2.h>
-#include <memory.h>
-#include <elf.h>
-#include <klog.h>
-#include <arch/x86_64/memory.h>
-#include <arch/x86_64/idt.h>
-#include <arch/x86_64/gdt.h>
-#include <arch/x86_64/dev/pit.h>
+#include <shuos/multiboot2.h>
+#include <shuos/memory.h>
+#include <shuos/elf.h>
+#include <shuos/klog.h>
+#include <shuos/arch/x86_64/memory.h>
+#include <shuos/arch/x86_64/idt.h>
+#include <shuos/arch/x86_64/gdt.h>
+#include <shuos/arch/x86_64/dev/pit.h>
 
 // Guard page (defined in entry.asm)
 extern int __guard_page__;

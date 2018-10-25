@@ -1,10 +1,10 @@
 // (C) 2018 Srimanta Barua
 // Bitmap-based physical memory managers
 
-#include <klog.h>
-#include <memory.h>
+#include <shuos/klog.h>
+#include <shuos/memory.h>
 #include <string.h>
-#include <ds/bitmap.h>
+#include <shuos/ds/bitmap.h>
 
 // Bitmap-based physical memory manager
 struct bm_pmmgr {
@@ -164,7 +164,7 @@ static void _free(paddr_t addr) {
 
 // Remap the space taken by the bitmap
 #if defined(__CFG_ARCH_x86_64__)
-#include <arch/x86_64/memory.h>
+#include <shuos/arch/x86_64/memory.h>
 
 static void _remap_cb() {
 	uint64_t bm0sz, bm1sz, num;

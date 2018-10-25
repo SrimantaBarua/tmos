@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 
 // A linked list type which can be embedded inside a structure
 struct list {

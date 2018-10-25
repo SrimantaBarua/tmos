@@ -10,13 +10,13 @@
 // On freeing, we check if adjacent chunks are free. If yes, we merge the chunks and move them to
 // the appropriate list.
 
-#include <memory.h>
-#include <system.h>
+#include <shuos/memory.h>
+#include <shuos/system.h>
 #include <string.h>
 #include <stdbool.h>
-#include <spin.h>
-#include <klog.h>
-#include <ds/list.h>
+#include <shuos/spin.h>
+#include <shuos/klog.h>
+#include <shuos/ds/list.h>
 
 // TODO: Per-CPU lockless memory pools
 

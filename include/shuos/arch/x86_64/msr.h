@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 
 // MSR numbers
 #define MSR_EFER 0xC0000080

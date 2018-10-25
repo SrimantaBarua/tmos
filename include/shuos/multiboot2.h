@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <system.h>
+#include <shuos/system.h>
 
 // The multiboot2 table's fixed header
 struct mb2_table {

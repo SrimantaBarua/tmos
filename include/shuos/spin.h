@@ -5,5 +5,5 @@
 #pragma once
 
 #if defined(__CFG_ARCH_x86_64__)
-#include <arch/x86_64/spin.h>
+#include <shuos/arch/x86_64/spin.h>
 #endif

@@ -1,7 +1,7 @@
 // (C) 2018 Srimanta Barua
 
-#include <memory.h>
-#include <klog.h>
+#include <shuos/memory.h>
+#include <shuos/klog.h>
 #include <stdbool.h>
 
 // Find indices for inserting region
