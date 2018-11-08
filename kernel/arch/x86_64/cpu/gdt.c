@@ -1,8 +1,8 @@
 // (C) 2018 Srimanta Barua
 
 #include <shuos/system.h>
-#include <shuos/arch/x86_64/gdt.h>
-#include <shuos/arch/x86_64/tss.h>
+#include <shuos/arch/gdt.h>
+#include <shuos/arch/tss.h>
 
 // Buffer for GDT segments
 static uint64_t _buf[5 + (2 * __MAX_NUM_TSS__)] = { 0 };

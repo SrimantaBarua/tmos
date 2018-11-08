@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 #include <shuos/system.h>
-#include <shuos/arch/x86_64/ctrlreg.h>
-#include <shuos/arch/x86_64/msr.h>
+#include <shuos/arch/ctrlreg.h>
+#include <shuos/arch/msr.h>
 
 // The CPU RFLAGS register
 union rflags {

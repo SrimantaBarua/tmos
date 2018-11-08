@@ -30,7 +30,8 @@ void* memmove(void *dest, const void *src, size_t n) {
 }
 
 // Set n bytes of memory at dest to val
-void* memset(void *dest, unsigned char val, size_t n) {
+void* memset(void *dest, int ival, size_t n) {
+	unsigned char val = (unsigned char) ival;
 	unsigned char *d = (unsigned char *) dest;
 	size_t i;
 	for (i = 0; i < n; i++) {
@@ -40,7 +41,8 @@ void* memset(void *dest, unsigned char val, size_t n) {
 }
 
 // Search the first n bytes of mem for val
-void* memchr(const void *dest, unsigned char val, size_t n) {
+void* memchr(const void *dest, int ival, size_t n) {
+	unsigned char val = (unsigned char) ival;
 	unsigned char *d = (unsigned char *) dest;
 	size_t i;
 	for (i = 0; i < n; i++) {
@@ -233,7 +235,7 @@ char* strstr(const char *haystack, const char *needle) {
 	for ( ; *haystack; haystack++) {
 		for (h = haystack, n = needle; *h && *n && *h == *n; h++, n++) { }
 		if (!*n) {
-			return haystack;
+			return (char*) haystack;
 		}
 	}
 	return NULL;

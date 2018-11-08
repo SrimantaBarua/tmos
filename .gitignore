@@ -1,0 +1,6 @@
+sysroot
+.ycm_extra_conf.py
+*.o
+*.kernel
+*.iso
+serial.log

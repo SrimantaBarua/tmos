@@ -1,0 +1,3 @@
+build_libk
+build_libc
+*.o

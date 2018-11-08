@@ -2,10 +2,10 @@
 // Code for configuring the Programmable Interval Timer, and for the PIT
 // interrupt handler
 
-#include <shuos/arch/x86_64/dev/pit.h>
-#include <shuos/arch/x86_64/dev/pic.h>
-#include <shuos/arch/x86_64/port_io.h>
-#include <shuos/arch/x86_64/idt.h>
+#include <shuos/arch/dev/pit.h>
+#include <shuos/arch/dev/pic.h>
+#include <shuos/arch/port_io.h>
+#include <shuos/arch/idt.h>
 #include <shuos/klog.h>
 
 // PIT ports

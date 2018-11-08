@@ -6,9 +6,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <shuos/klog.h>
-#include <shuos/arch/x86_64/memory.h>
-#include <shuos/arch/x86_64/cpu.h>
-#include <shuos/arch/x86_64/idt.h>
+#include <shuos/arch/memory.h>
+#include <shuos/arch/cpu.h>
+#include <shuos/arch/idt.h>
 
 // A page table
 struct ptable {

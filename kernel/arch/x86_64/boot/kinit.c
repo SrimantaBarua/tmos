@@ -10,10 +10,10 @@
 #include <shuos/memory.h>
 #include <shuos/elf.h>
 #include <shuos/klog.h>
-#include <shuos/arch/x86_64/memory.h>
-#include <shuos/arch/x86_64/idt.h>
-#include <shuos/arch/x86_64/gdt.h>
-#include <shuos/arch/x86_64/dev/pit.h>
+#include <shuos/arch/memory.h>
+#include <shuos/arch/idt.h>
+#include <shuos/arch/gdt.h>
+#include <shuos/arch/dev/pit.h>
 
 // Guard page (defined in entry.asm)
 extern int __guard_page__;

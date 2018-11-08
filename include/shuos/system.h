@@ -10,9 +10,7 @@
 #define VERSION_MINOR 1
 #define VERISON_PATCH 0
 
-#if defined(__CFG_ARCH_x86_64__)
-#include <shuos/arch/x86_64/system.h>
-#endif
+#include <shuos/arch/system.h>
 
 // Utility math
 #define ROUND_UP(x, y) (((x) + ((y) - 1)) & ~((y) - 1))

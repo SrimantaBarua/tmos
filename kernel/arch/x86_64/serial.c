@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 #include <shuos/serial.h>
-#include <shuos/arch/x86_64/port_io.h>
+#include <shuos/arch/port_io.h>
 
 // Registers
 #define DATA(base)         (base)

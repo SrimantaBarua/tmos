@@ -11,10 +11,10 @@ void* memcpy(void *dest, const void *src, size_t n);
 void* memmove(void *dest, const void *src, size_t n);
 
 // Set n bytes of memory at dest to val
-void* memset(void *dest, unsigned char val, size_t n);
+void* memset(void *dest, int val, size_t n);
 
 // Search the first n bytes of mem for val
-void* memchr(const void *mem, unsigned char val, size_t n);
+void* memchr(const void *mem, int val, size_t n);
 
 // Compare the first n bytes at a and b, return 0 if identical. If not,
 // return negative if byte from a is lower than byte from b, and positive

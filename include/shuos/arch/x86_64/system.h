@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <shuos/arch/x86_64/cpu.h>
-#include <shuos/arch/x86_64/idt.h>
+#include <shuos/arch/cpu.h>
+#include <shuos/arch/idt.h>
+#include <shuos/arch/global_consts.h>
 
 // Paging and addresses
-#define PAGE_SIZE       4096
 #define PAGE_SIZE_SHIFT 12
 #define PADDR_MASK      0x00ffffffffffffff
 #define PADDR_INVALID   UINT64_MAX

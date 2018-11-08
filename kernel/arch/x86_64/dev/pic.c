@@ -1,8 +1,8 @@
 // (C) 2018 Srimanta Barua
 // Code for enabling and configuring the Programming Interrupt Controller
 
-#include <shuos/arch/x86_64/dev/pic.h>
-#include <shuos/arch/x86_64/port_io.h>
+#include <shuos/arch/dev/pic.h>
+#include <shuos/arch/port_io.h>
 
 
 #define PIC_CMD_EOI 0x20  // End of interrupt command

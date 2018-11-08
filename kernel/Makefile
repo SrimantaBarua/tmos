@@ -6,7 +6,7 @@ ARCH?=x86_64
 OPT?=-O2
 
 # We're fixing the compiler to GCC for now..
-CC:=$(ARCH)-elf-gcc
+CC:=$(ARCH)-shuos-gcc
 
 # Compiler warnings
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
@@ -14,17 +14,15 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 
 # Compiler and linker flags
 CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARN)
-CPPFLAGS:=-I../include/ -D__CFG_ARCH_$(ARCH)__
-LDFLAGS:=-nostdlib -Wl,-gc-sections
-LIBS:=-lgcc
+CPPFLAGS:=-I../sysroot/usr/include/ -D__CFG_ARCH_$(ARCH)__ -D__SHUOS_KERNEL__
+LDFLAGS:=-nostdlib -Wl,-gc-sections -L.
+LIBS:=-lk
 
 # The kernel ELF binary
 KERNEL:=shuos.kernel
 
 # Objects which will be linked to make the kernel binary
-SRC_OBJS:=klog.o ctype.o vsprintf.o string.o multiboot2.o mem/memory.o mem/bitmap.o mem/heap.o
-CRTBEGIN_OBJ:=$(shell $(CC) -print-file-name=crtbegin.o)
-CRTEND_OBJ:=$(shell $(CC) -print-file-name=crtend.o)
+OBJS:=klog.o vsprintf.o multiboot2.o mem/memory.o mem/bitmap.o mem/heap.o
 
 # Include arch-specific config
 include arch/$(ARCH)/make.config
@@ -36,19 +34,20 @@ LDFLAGS+=$(ARCH_LDFLAGS)
 LIBS+=$(ARCH_LIBS)
 
 # Add arch specific objects and build list of objects to be linked
-SRC_OBJS+=$(ARCH_OBJS)
-BUILD_OBJS:=$(ARCH_CRTI_OBJ) $(SRC_OBJS) $(ARCH_CRTN_OBJ)
-TOTAL_OBJS:=$(ARCH_CRTI_OBJ) $(CRTBEGIN_OBJ) $(SRC_OBJS) $(CRTEND_OBJ) $(ARCH_CRTN_OBJ)
+OBJS+=$(ARCH_OBJS)
+
+# Kernel's statically-compiled version of libk
+LIBK=libk.a
 
 
-.PHONY: all clean test_grub purge
+.PHONY: all clean test_grub purge libk
 
 # Build the kernel
 all: $(KERNEL)
 
 # Clean kernel and object files
 clean:
-	rm -rf $(KERNEL) $(BUILD_OBJS)
+	rm -rf $(KERNEL) $(OBJS) $(LIBK)
 
 # Run a script to create a dummy ISO with grub-mkrescue, and run using QEMU
 # TODO: Better testing, especially when we have userspace
@@ -59,10 +58,14 @@ test_grub: all
 purge: clean
 	./scripts/test_grub.sh clean
 
+libk:
+	make -C ../libc libk
+	cp ../libc/build_libk/libk.a $(LIBK)
+
 # Link the kernel
-$(KERNEL): $(BUILD_OBJS)
+$(KERNEL): $(OBJS) libk
 	@echo "  LD $@"
-	@$(CC) -n -T $(ARCH_LDSCRIPT) -o $@ $(TOTAL_OBJS) $(LDFLAGS) $(LIBS)
+	@$(CC) -n -T $(ARCH_LDSCRIPT) -o $@ $(OBJS) $(LDFLAGS) $(LIBS)
 
 # Compile C objects
 %.o: %.c

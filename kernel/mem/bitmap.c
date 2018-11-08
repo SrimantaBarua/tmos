@@ -164,7 +164,7 @@ static void _free(paddr_t addr) {
 
 // Remap the space taken by the bitmap
 #if defined(__CFG_ARCH_x86_64__)
-#include <shuos/arch/x86_64/memory.h>
+#include <shuos/arch/memory.h>
 
 static void _remap_cb() {
 	uint64_t bm0sz, bm1sz, num;
