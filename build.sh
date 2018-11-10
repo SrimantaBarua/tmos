@@ -51,7 +51,35 @@ check_autoconf_version() {
 	fi
 }
 
+build_autoconf() {
+	cd $cur_dir
+	echo  -e "\n======== BUILD AUTOCONF ========"
+	mkdir -p $tools_src_dir
+	cd $tools_src_dir
+	if [ ! -f "autoconf-$autoconf_ver.tar.xz" ]; then
+		echo -e "\n---------- Downloading ---------"
+		wget -O "autoconf-$autoconf_ver.tar.xz" "$gnu_url/autoconf/autoconf-$autoconf_ver.tar.xz"
+		echo "------------- Done -------------"
+	fi
+	echo -e "\n* autoconf-$autoconf_ver.tar.xz downloaded"
+	if [ ! -d "autoconf-$autoconf_ver" ]; then
+		echo -e "\n---------- Extracting ----------"
+		tar -xf "autoconf-$autoconf_ver.tar.xz"
+		echo "------------- Done -------------"
+	fi
+	echo -e "\n* autoconf-$autuconf_ver extracted"
+	echo -e "\n----------- Building -----------"
+	cd autoconf-$autoconf_ver
+	./configure
+	make -j$cores
+	sudo make install
+	echo "------------- Done -------------"
+	echo -e "\n* autoconf-$autoconf_ver built"
+	echo -e "\n============= DONE =============="
+}
+
 copy_headers() {
+	cd $cur_dir
 	if [ ! -d $include_dir ]; then
 		cp -R $cur_dir/include $include_dir
 		cd $include_dir/shuos
@@ -62,6 +90,7 @@ copy_headers() {
 }
 
 build_copy_crtstuff() {
+	cd $cur_dir
 	echo  -e "\n======== BUILD CRTSTUFF ========\n"
 	mkdir -p $lib_dir
 	make -C $cur_dir/libc/arch/$arch/crt
@@ -89,17 +118,18 @@ build_patched_binutils() {
 	echo -e "\n* binutils-$binutils_ver extracted"
 	if [ ! -f .binutils_patched ]; then
 		echo -e "\n----------- Patching -----------"
-		cd binutils-$binutils_ver
+		cd $tools_src_dir/binutils-$binutils_ver
 		patch -p1 < $tools_patch_dir/binutils-$binutils_ver.patch
 		touch $tools_src_dir/.binutils_patched
 		echo "------------- Done -------------"
 	fi
+	cd $tools_src_dir
 	echo -e "\n* binutils-$binutils_ver patched"
 	if [ -z "$(command -v $TARGET-ld)" ]; then
 		echo -e "\n----------- Building -----------"
-		rm -rf build-binutils
-		mkdir build-binutils
-		cd build-binutils
+		rm -rf $tools_src_dir/build-binutils
+		mkdir -p $tools_src_dir/build-binutils
+		cd $tools_src_dir/build-binutils
 		../binutils-$binutils_ver/configure --target="$TARGET" --prefix="$PREFIX" --with-sysroot="$sysroot/" --disable-nls --disable-werror
 		make -j$cores
 		make install
@@ -111,6 +141,7 @@ build_patched_binutils() {
 
 build_patched_gcc() {
 	echo  -e "\n=========== BUILD GCC =========="
+	mkdir -p $tools_src_dir
 	cd $tools_src_dir
 	if [ ! -f "gcc-$gcc_ver.tar.xz" ]; then
 		echo -e "\n---------- Downloading ---------"
@@ -128,17 +159,18 @@ build_patched_gcc() {
 	echo -e "\n* gcc-$gcc_ver extracted"
 	if [ ! -f .gcc_patched ]; then
 		echo -e "\n----------- Patching -----------"
-		cd gcc-$gcc_ver
+		cd $tools_src_dir/gcc-$gcc_ver
 		patch -p1 < $tools_patch_dir/gcc-$gcc_ver.patch
 		touch $tools_src_dir/.gcc_patched
 		echo "------------- Done -------------"
 	fi
+	cd $tools_dir_dir
 	echo -e "\n* gcc-$gcc_ver patched"
 	if [ -z "$(command -v $TARGET-gcc)" ]; then
 		echo -e "\n----------- Building -----------"
-		rm -rf build-gcc
-		mkdir build-gcc
-		cd build-gcc
+		rm -rf $tools_src_dir/build-gcc
+		mkdir $tools_src_dir/build-gcc
+		cd $tools_src_dir/build-gcc
 		../gcc-$gcc_ver/configure --target="$TARGET" --prefix="$PREFIX" --disable-nls --enable-languages=c --with-sysroot="$sysroot/" --disable-multilib
 		make all-gcc -j$cores
 		make all-target-libgcc -j$cores
@@ -151,6 +183,7 @@ build_patched_gcc() {
 }
 
 build_libc() {
+	cd $cur_dir
 	mkdir -p $lib_dir
 	make -C $libc_dir libc
 	cp $libc $lib_dir
@@ -158,6 +191,7 @@ build_libc() {
 }
 
 build_kernel() {
+	cd $cur_dir
 	make -C $kernel_dir
 }
 
@@ -226,7 +260,7 @@ purge() {
 }
 
 print_usage() {
-	echo "USAGE: ./build.sh [ system | iso | clean | purge ]"
+	echo "USAGE: ./build.sh [ check_autoconf | build_autoconf | system | iso | clean | purge ]"
 }
 
 
@@ -236,6 +270,13 @@ case $# in
 		;;
 	1)
 		case $1 in
+			check_autoconf)
+				check_autoconf_version
+				echo "* Valid autoconf version ($autoconf_ver) installed"
+				;;
+			build_autoconf)
+				build_autoconf
+				;;
 			system)
 				system
 				;;
