@@ -32,21 +32,21 @@ struct tss {
 	uint64_t __rsvd2;
 	uint16_t __rsvd3;
 	uint16_t ioperm_off; // 16-bit offset to IO permissions bitmap from base of TSS
-} PACKET;
+} __attribute__((packed));
 
-#ifndef __CFG_SMP__
-#define __MAX_NUM_TSS__ 1
+#ifndef __SHUOS_CFG_SMP__
+#define __SHUOS_CFG_MAX_NUM_TSS__ 1
 #else
-#define __MAX_NUM_TSS__ __CFG_MAX_NUM_CPUS__
+#define __SHUOS_CFG_MAX_NUM_TSS__ __SHUOS_CFG_MAX_NUM_CPUS__
 #endif
 
-#define __BYTES_PER_TSS__ 128
+#define __SHUOS_CFG_BYTES_PER_TSS__ 128
 
 // Buffer for TSSes
-extern char __tss_buf[__MAX_NUM_TSS__ * __BYTES_PER_TSS__];
+extern char __tss_buf[__SHUOS_CFG_MAX_NUM_TSS__ * __SHUOS_CFG_BYTES_PER_TSS__];
 
 // Get pointer to nth TSS
 static inline struct tss* tss_get_n(uint32_t n) {
-	ASSERT(n < __MAX_NUM_TSS__);
-	return (struct tss*) (__tss_buf + (n * __BYTES_PER_TSS__));
+	ASSERT(n < __SHUOS_CFG_MAX_NUM_TSS__);
+	return (struct tss*) (__tss_buf + (n * __SHUOS_CFG_BYTES_PER_TSS__));
 }

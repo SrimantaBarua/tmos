@@ -13,8 +13,8 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 	-Wno-long-long -Winline -Wuninitialized
 
 # Compiler and linker flags
-CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARN)
-CPPFLAGS:=-I../sysroot/usr/include/ -D__CFG_ARCH_$(ARCH)__ -D__SHUOS_KERNEL__
+CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARNINGS)
+CPPFLAGS:=-I../sysroot/usr/include/ -D__SHUOS_CFG_ARCH_$(ARCH)__ -D__SHUOS_KERNEL__
 LDFLAGS:=-nostdlib -Wl,-gc-sections -L.
 LIBS:=-lk
 

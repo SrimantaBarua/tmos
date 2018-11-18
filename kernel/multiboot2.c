@@ -56,6 +56,7 @@ static uint32_t _cvt_mb2_mmap_typ(uint32_t type) {
 	case 3 : return REGION_TYPE_ACPI_RECLAIM;
 	case 4 : return REGION_TYPE_ACPI_NVS;
 	}
+	PANIC("unreachable");
 }
 
 // Fill our memory map from multiboot2 memory map

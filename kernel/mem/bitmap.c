@@ -94,7 +94,7 @@ static void _init(region_t *regions, uint32_t num_regions, paddr_t fast_start, p
 		PANIC("No space for bitmap in provided regions");
 	}
 	// Found
-#if defined(__CFG_ARCH_x86_64__) || defined(__CFG_ARCH_x86__)
+#if defined(__SHUOS_CFG_ARCH_x86_64__) || defined(__SHUOS_CFG_ARCH_x86__)
 	BM_INIT(_mgr.bm0, REGION_START(regions[bmreg]) + KRNL_VBASE, bm0_nbi);
 	BM_INIT(_mgr.bm1, REGION_START(regions[bmreg]) + KRNL_VBASE + BM_SZ(_mgr.bm0), bm1_nbi);
 #else
@@ -163,7 +163,7 @@ static void _free(paddr_t addr) {
 }
 
 // Remap the space taken by the bitmap
-#if defined(__CFG_ARCH_x86_64__)
+#if defined(__SHUOS_CFG_ARCH_x86_64__)
 #include <shuos/arch/memory.h>
 
 static void _remap_cb() {
@@ -182,7 +182,7 @@ struct pmmgr BM_PMMGR = {
 	.init = _init,
 	.alloc = _alloc,
 	.free = _free,
-#if defined(__CFG_ARCH_x86_64__)
+#if defined(__SHUOS_CFG_ARCH_x86_64__)
 	.remap_cb = _remap_cb,
 #endif
 };

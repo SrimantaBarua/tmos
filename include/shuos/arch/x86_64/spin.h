@@ -12,7 +12,7 @@ typedef uint32_t spin_t;
 // Initialize a spinlock
 #define SPIN_UNLOCKED 0
 
-#ifndef __CFG_SMP__
+#ifndef __SHUOS_CFG_SMP__
 
 // Acquire a spinlock
 static inline void spin_lock(spin_t *lock) {

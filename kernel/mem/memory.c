@@ -78,7 +78,7 @@ const char* _regtype_str(uint32_t type) {
 // Insert a region into a memory map
 // The memory map is stored in decreasing order of memory addresses
 void mmap_insert_region(struct mmap *map, uint64_t start, uint64_t end, uint32_t type) {
-	uint64_t endidx, startidx, regtyp;
+	uint64_t endidx, startidx;
 	bool endaligned = false;
 	if (start == end) {
 		return;

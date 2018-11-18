@@ -355,9 +355,6 @@ void* kcalloc(size_t nmemb, size_t size) {
 	return ptr;
 }
 
-// Reallocate a block of memory to be of the given size, and copy the contents
-void* krealloc(void *ptr, size_t size);
-
 // Free allocated memory
 void kfree(void *ptr) {
 	struct heap_chunk *chunk;

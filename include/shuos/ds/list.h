@@ -14,6 +14,7 @@ struct list {
 // Initialization value for a list
 #define LIST_INIT(name) { &(name), &(name) }
 
+
 // Initialize a list heap
 static inline void list_init(struct list *node) {
 	node->prev = node->next = node;

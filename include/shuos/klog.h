@@ -8,7 +8,7 @@
 void klog(const char *fmt, ...);
 
 // Kernel panic
-void __panic(const char *file, unsigned line, const char *fn, const char *fmt, ...);
+void __attribute__((noreturn)) __panic(const char *file, unsigned line, const char *fn, const char *fmt, ...);
 
 #define PANIC(fmt, ...) __panic(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__)
 

@@ -49,7 +49,7 @@ struct ptable {
 	e |= addr;                 \
 } while (0);
 #define PTE_SET(e,addr,flags) do { \
-	e = addr | flags;          \
+	e = (addr) | (flags);          \
 } while (0);
 
 // Get table index for given address
@@ -289,7 +289,7 @@ void vmm_map(vaddr_t vaddr, uint64_t n, uint64_t flags) {
 		// Check that PT entry is unused
 		ASSERT(PTE_UNUSED(pt->e[idx]));
 		// Mark as to be allocated
-		PTE_SET(pt->e[idx], 0,(flags | PTE_FLG_TO_ALLOC) & ~PTE_FLG_PRESENT);
+		PTE_SET(pt->e[idx], 0, (flags | PTE_FLG_TO_ALLOC) & (~PTE_FLG_PRESENT));
 		// Go to next page
 		vaddr += PAGE_SIZE;
 	}

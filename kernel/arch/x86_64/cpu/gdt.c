@@ -5,7 +5,7 @@
 #include <shuos/arch/tss.h>
 
 // Buffer for GDT segments
-static uint64_t _buf[5 + (2 * __MAX_NUM_TSS__)] = { 0 };
+static uint64_t _buf[5 + (2 * __SHUOS_CFG_MAX_NUM_TSS__)] = { 0 };
 
 // Index of next GDT segment
 static uint64_t _next;
@@ -42,7 +42,7 @@ void gdt_init() {
 	// Add user data segment
 	gdt_add_seg(USER_DATA_SEGMENT);
 	// For each core, add TSS
-	for (i = 0; i < __MAX_NUM_TSS__; i++) {
+	for (i = 0; i < __SHUOS_CFG_MAX_NUM_TSS__; i++) {
 		tss = tss_get_n(i);
 		tss->ioperm_off = sizeof(struct tss);
 		gdt_add_tss(tss);

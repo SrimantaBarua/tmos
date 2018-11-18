@@ -14,7 +14,7 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 
 # Compiler and linker flags
 CFLAGS:=$(OPT) $(WARN)
-CPPFLAGS:=-I../sysroot/usr/include/ -D__CFG_ARCH_$(ARCH)__
+CPPFLAGS:=-I../sysroot/usr/include/ -D__SHUOS_CFG_ARCH_$(ARCH)__
 LDFLAGS:=-nostdlib
 LIBS:=
 
