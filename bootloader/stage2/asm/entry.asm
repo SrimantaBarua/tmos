@@ -12,4 +12,9 @@ section .stage2_start_section
 global stage2_start
 stage2_start:
 	extern	main
-	jmp	main
+	call	main
+
+	cli
+.halt
+	hlt
+	jmp	.halt

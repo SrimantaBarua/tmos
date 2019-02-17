@@ -26,7 +26,6 @@ build_binutils() {
 	# Does ld exist?
 	if [ $(command -v "$TARGET-ld") ]; then
 		# Exists. Return
-		echo "build_binutils: $TARGET-ld" already in path
 		return
 	fi
 	# No
@@ -74,7 +73,6 @@ build_gcc() {
 	# Does gcc exist?
 	if [ $(command -v "$TARGET-gcc") ]; then
 		# Exists. Return
-		echo "build_gcc: $TARGET-gcc" already in path
 		return
 	fi
 	# No

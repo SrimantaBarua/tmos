@@ -43,7 +43,7 @@
 [BITS 16]
 
 
-LOAD_SECTORS: equ 22
+LOAD_SECTORS: equ 23
 
 
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
@@ -370,8 +370,6 @@ part_3:
 dw 0xAA55
 
 
-
-
 ;; ---------------- STAGE 1.5 -----------------
 
 ; Start of the stage 1.5 bootloader. This loads C code, makes the switch to 32-bit protected mode,
@@ -404,7 +402,9 @@ stage_1_5_start:
 	mov	si, msg_mem_map_ok
 	call	print_16
 
-	; TODO: Get video modes
+	; Get VESA BIOS information
+	call	vesa_get_bios_info
+
 
 ; Go to protected mode
 ; For that, we need to -
@@ -415,11 +415,12 @@ stage_1_5_start:
 ;  - Jump to set new CS
 go_to_pmode:
 	cli
+
 	; Disable NMI
-.disable_nmi:
 	in	al, 0x70
 	or	al, 0x80
 	out	0x70, al
+
 	; Enable A20 address line
 	call	a20_enable
 	or	al, al
@@ -428,14 +429,18 @@ go_to_pmode:
 	mov	ds, ax
 	mov	si, msg_a20_ok
 	call	print_16
+
 	; Load valid GDT
 	lgdt	[gdtr32]
+
 	; Set bit 0 in CR0
 	mov	eax, cr0
 	or	al, 1
 	mov	cr0, eax
+
 	; Jump to pmode
 	jmp	0x08:protected_mode_start
+
 .no_a20:
 	xor	ax, ax
 	mov	ds, ax
@@ -582,15 +587,87 @@ test_a20:
 	popf
 	ret
 
+
+; Get VESA BIOS information, including manufacturer, supported modes, available video memory etc.
+vesa_get_bios_info:
+	push	es
+	push	di
+	xor	ax, ax
+	mov	es, ax
+	mov	di, vbe_info
+	mov	ax, 0x4f00
+	int	0x10
+	; Check return status
+	cmp	ax, 0x004f
+	jne	.no_vesa
+	; Check signature
+	cmp	byte [vbe_info.signature], 'V'
+	jne	.no_vesa
+	cmp	byte [vbe_info.signature + 1], 'E'
+	jne	.no_vesa
+	cmp	byte [vbe_info.signature + 2], 'S'
+	jne	.no_vesa
+	cmp	byte [vbe_info.signature + 3], 'A'
+	jne	.no_vesa
+	; Valid VESA
+	push	ds
+	push	si
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_vesa_ok
+	call	print_16
+	pop	si
+	pop	ds
+
+	pop	di
+	pop	es
+
+	ret
+
+.no_vesa:
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_no_vesa
+	call	print_16
+	jmp	halt
+
+
+; Structure to store VESA BIOS information
+align 4
+vbe_info:
+.signature:        db "VBE2"            ; Must be "VESA" to indicate valid VBE support
+.version_min       dw 0                 ; VBE minor version
+.version_maj       dw 0                 ; VBE major version
+.oem_off:          dd 0                 ; Offset to OEM
+.oem_seg:          dd 0                 ; Segment for OEM
+.capabilities:     dd 0                 ; Bitfield that describes card capabilities
+.video_modes_off:  dw 0                 ; Offset for supported video modes
+.video_modes_seg:  dw 0                 ; Segment for supported video modes
+.video_memory:     dw 0                 ; Amount of video memory in 64KB blocks
+.software_rev:     dw 0                 ; Software revision
+.vendor_off:       dw 0                 ; Offset to card vendor string
+.vendor_seg:       dw 0                 ; Segment for card vendor string
+.product_name_off: dw 0                 ; Offset for product name
+.product_name_seg: dw 0                 ; Segment for product name
+.product_rev_off:  dw 0                 ; Offset for product revision
+.product_rev_seg:  dw 0                 ; Segment for product revision
+.rsvd:             times 222 db  0      ; Reserved
+.oem_data:         times 256 db  0      ; OEM BIOSes store their strings here
+
+
 msg_mem_map_err: db "[X] Mem map", 0x0A, 0x0D, 0x00
 msg_mem_map_ok:  db "[+] Mem map", 0x0A, 0x0D, 0x00
 msg_no_a20:      db "[X] A20 gate", 0x0A, 0x0D, 0x00
 msg_a20_ok:      db "[+] A20 gate", 0x0A, 0x0D, 0x00
+msg_no_vesa:     db "[X] VESA BIOS info", 0x0A, 0x0D, 0x00
+msg_vesa_ok:     db "[+] VESA BIOS info", 0x0A, 0x0D, 0x00
 
 
 ;; ---------------- 32-BIT PROTECTED MODE -----------------
 
+
 [BITS 32]
+align 8
 
 ; Entry point of 32-bit code
 protected_mode_start:
@@ -600,6 +677,7 @@ protected_mode_start:
 	mov	es, ax
 	mov	fs, ax
 	mov	gs, ax
+
 	; Enable NMI
 .enable_nmi:
 	in	al, 0x70
@@ -608,7 +686,9 @@ protected_mode_start:
 
 	; Jump to C code
 	mov	sp, 0x7c00
-	jmp	0x8200
+	mov	eax, vbe_info
+	push	eax
+	jmp	c_code_starts_here
 
 
 ; 32-bit GDT
@@ -633,9 +713,12 @@ gdt32:
 
 ; GDT register
 gdtr32:
-.size:	dw ($ - gdt32) - 1
+.size:	dw 23
 .off:	dd gdt32
 
+db "Hello World", 0
 
 ; Padding till the end
-times 1536 - ($ - $$) db 0
+times 2048 - ($ - $$) db 0
+
+c_code_starts_here:

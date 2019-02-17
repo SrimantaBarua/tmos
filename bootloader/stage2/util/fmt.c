@@ -30,12 +30,12 @@ void fmt_write(void (*cb) (const char *str), const char *fmt, va_list ap) {
 				fmt++;
 			}
 			for ( ; buf_idx < sizeof(buf) - 1; buf_idx++) {
-				if (!fmt[buf_idx] || fmt[buf_idx] == '%') {
+				if (!*fmt || *fmt == '%') {
 					break;
 				}
-				buf[buf_idx] = fmt[buf_idx];
+				buf[buf_idx] = *fmt;
+				fmt++;
 			}
-			fmt += buf_idx;
 			_flush_buf(cb, buf, &buf_idx);
 			continue;
 		}
@@ -133,7 +133,7 @@ void fmt_write(void (*cb) (const char *str), const char *fmt, va_list ap) {
 			break;
 		case 'c':
 			fmt++;
-			if (buf_idx == sizeof(buf) - 1) {
+			if (buf_idx >= sizeof(buf) - 1) {
 				_flush_buf(cb, buf, &buf_idx);
 			}
 			buf[buf_idx] = ((char) va_arg(ap, uint32_t));
