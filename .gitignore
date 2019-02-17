@@ -4,3 +4,4 @@ sysroot
 *.kernel
 *.iso
 serial.log
+tools

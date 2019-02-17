@@ -22,7 +22,7 @@ void __log_without_typ(const char *fmt, ...);
 #define PANIC(fmt, ...) { \
 	__log_without_typ("[PANIC]: %s:%d %s(): ", __FILE__, __LINE__, __func__); \
 	__log_without_typ(fmt, __VA_ARGS__); \
-	__asm__ __volatile__ ("cli; hlt; jmp $":::"memory"); \
+	__asm__ __volatile__("cli; hlt; jmp $":::"memory"); \
 }
 
 #define ASSERT(x) { \

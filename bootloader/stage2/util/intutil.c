@@ -13,10 +13,10 @@ char* itoa(int32_t val, char *buf, uint32_t base) {
 		return buf;
 	}
 	if (base != 10 || val > 0) {
-		return utoa (val, buf, base);
+		return utoa(val, buf, base);
 	}
 	buf[0] = '-';
-	utoa (-val, buf + 1, base);
+	utoa(-val, buf + 1, base);
 	return buf;
 }
 
@@ -47,10 +47,10 @@ char* lltoa(int64_t val, char *buf, uint64_t base) {
 		return buf;
 	}
 	if (base != 10 || val > 0) {
-		return ulltoa (val, buf, base);
+		return ulltoa(val, buf, base);
 	}
 	buf[0] = '-';
-	ulltoa (-val, buf + 1, base);
+	ulltoa(-val, buf + 1, base);
 	return buf;
 }
 

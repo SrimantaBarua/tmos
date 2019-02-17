@@ -14,7 +14,7 @@
 // To avoid redundant code
 static void _flush_buf(void (*cb) (const char *str), char *buf, unsigned *idx) {
 	buf[*idx] = '\0';
-	cb (buf);
+	cb(buf);
 	*idx = 0;
 }
 
@@ -29,19 +29,19 @@ void fmt_write(void (*cb) (const char *str), const char *fmt, va_list ap) {
 			if  (fmt[0] == '%') {
 				fmt++;
 			}
-			for ( ; buf_idx < sizeof (buf) - 1; buf_idx++) {
+			for ( ; buf_idx < sizeof(buf) - 1; buf_idx++) {
 				if (!fmt[buf_idx] || fmt[buf_idx] == '%') {
 					break;
 				}
 				buf[buf_idx] = fmt[buf_idx];
 			}
 			fmt += buf_idx;
-			_flush_buf (cb, buf, &buf_idx);
+			_flush_buf(cb, buf, &buf_idx);
 			continue;
 		}
 		fmt_begun_at = fmt;
 		fmt++;
-		if (ISDIGIT (*fmt)) {
+		if (ISDIGIT(*fmt)) {
 			// Handle width specification, like %08llx
 			if (*fmt == '0') {
 				zero_pad = true;
@@ -52,13 +52,13 @@ void fmt_write(void (*cb) (const char *str), const char *fmt, va_list ap) {
 			width = 0;
 			i = 0;
 			size_override = true;
-			while (ISDIGIT (*fmt) && i < sizeof (width_buf) - 1) {
+			while (ISDIGIT(*fmt) && i < sizeof(width_buf) - 1) {
 				width_buf[i] = *fmt;
 				fmt++;
 				i++;
 			}
 			width_buf[i] = '\0';
-			width = atoi (width_buf);
+			width = atoi(width_buf);
 		} else {
 			size_override = false;
 		}
@@ -78,9 +78,9 @@ void fmt_write(void (*cb) (const char *str), const char *fmt, va_list ap) {
 				break;
 			default:
 				if (buf_idx > 0) {
-					_flush_buf (cb, buf, &buf_idx);
+					_flush_buf(cb, buf, &buf_idx);
 				}
-				cb (fmt_begun_at);
+				cb(fmt_begun_at);
 				return;
 			}
 		case 'd':
@@ -88,73 +88,73 @@ void fmt_write(void (*cb) (const char *str), const char *fmt, va_list ap) {
 		case 'o':
 		case 'x':
 			if (buf_idx > 0) {
-				_flush_buf (cb, buf, &buf_idx);
+				_flush_buf(cb, buf, &buf_idx);
 			}
 			switch (*fmt) {
 			case 'd':
 				intlevel == 2
-					? lltoa (va_arg (ap, int64_t), buf, 10)
-					: itoa (va_arg (ap, int), buf, 10);
+					? lltoa(va_arg(ap, int64_t), buf, 10)
+					: itoa(va_arg(ap, int), buf, 10);
 				break;
 			case 'u':
 				intlevel == 2
-					? ulltoa (va_arg (ap, uint64_t), buf, 10)
-					: utoa (va_arg (ap, uint32_t), buf, 10);
+					? ulltoa(va_arg(ap, uint64_t), buf, 10)
+					: utoa(va_arg(ap, uint32_t), buf, 10);
 				break;
 			case 'o':
 				intlevel == 2
-					? ulltoa (va_arg (ap, uint64_t), buf, 8)
-					: utoa (va_arg (ap, uint32_t), buf, 8);
+					? ulltoa(va_arg(ap, uint64_t), buf, 8)
+					: utoa(va_arg(ap, uint32_t), buf, 8);
 				break;
 			case 'x':
 				intlevel == 2
-					? ulltoa (va_arg (ap, uint64_t), buf, 16)
-					: utoa (va_arg (ap, uint32_t), buf, 16);
+					? ulltoa(va_arg(ap, uint64_t), buf, 16)
+					: utoa(va_arg(ap, uint32_t), buf, 16);
 				break;
 			}
 			if (size_override) {
-				buf_idx = strlen (buf);
+				buf_idx = strlen(buf);
 				if (buf_idx < width) {
 					unsigned pad = width - buf_idx;
-					memmove (buf + pad, buf, buf_idx + 1);
+					memmove(buf + pad, buf, buf_idx + 1);
 					if (zero_pad) {
-						itoa (pad, width_buf, 10);
-						memset (buf, '0', pad);
+						itoa(pad, width_buf, 10);
+						memset(buf, '0', pad);
 					} else {
-						memset (buf, ' ', pad);
+						memset(buf, ' ', pad);
 					}
 					buf[width] = '\0';
 				}
 			}
-			cb (buf);
+			cb(buf);
 			buf_idx = 0;
 			fmt++;
 			intlevel = 0;
 			break;
 		case 'c':
 			fmt++;
-			if (buf_idx == sizeof (buf) - 1) {
-				_flush_buf (cb, buf, &buf_idx);
+			if (buf_idx == sizeof(buf) - 1) {
+				_flush_buf(cb, buf, &buf_idx);
 			}
-			buf[buf_idx] = ((char) va_arg (ap, uint32_t));
+			buf[buf_idx] = ((char) va_arg(ap, uint32_t));
 			buf_idx++;
 			continue;
 		case 's':
 			fmt++;
 			if (buf_idx > 0) {
-				_flush_buf (cb, buf, &buf_idx);
+				_flush_buf(cb, buf, &buf_idx);
 			}
-			cb (va_arg (ap, const char *));
+			cb(va_arg(ap, const char *));
 			continue;
 		default:
 			if (buf_idx > 0) {
-				_flush_buf (cb, buf, &buf_idx);
+				_flush_buf(cb, buf, &buf_idx);
 			}
-			cb (fmt_begun_at);
+			cb(fmt_begun_at);
 			return;
 		}
 	}
 	if (buf_idx > 0) {
-		_flush_buf (cb, buf, &buf_idx);
+		_flush_buf(cb, buf, &buf_idx);
 	}
 }

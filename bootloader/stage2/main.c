@@ -9,12 +9,14 @@
 
 void main() {
 	// Initialize the serial port interface
-	serial_init ();
+	serial_init();
+	// Log that we're starting up
+	log(LOG_INFO, "Shu's putting on her Boots..\n");
 	union region *regions = 0;
-	uint32_t num_regions = mem_load_regions (0x10000, &regions);
+	uint32_t num_regions = mem_load_regions(0x10000, &regions);
 
 	volatile uint32_t *ptr = 0xb8000;
 	*ptr = 0x2f4b2f4f;
-	PANIC ("Test panic: %d\n", 3);
+	PANIC("Test panic: %d\n", 3);
 	__asm__ __volatile__ ("cli; hlt; jmp $" : : : );
 }

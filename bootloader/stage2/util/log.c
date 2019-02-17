@@ -23,18 +23,18 @@ static const char* _log_type_str(enum log_type type) {
 }
 
 // Write a log message
-void log (enum log_type type, const char *fmt, ...) {
+void log(enum log_type type, const char *fmt, ...) {
 	va_list ap;
-	serial_write_str (_log_type_str (type));
-	va_start (ap, fmt);
-	fmt_write (serial_write_str, fmt, ap);
-	va_end (ap);
+	serial_write_str(_log_type_str(type));
+	va_start(ap, fmt);
+	fmt_write(serial_write_str, fmt, ap);
+	va_end(ap);
 }
 
 // Log message without type
 void __log_without_typ(const char *fmt, ...) {
 	va_list ap;
-	va_start (ap, fmt);
-	fmt_write (serial_write_str, fmt, ap);
-	va_end (ap);
+	va_start(ap, fmt);
+	fmt_write(serial_write_str, fmt, ap);
+	va_end(ap);
 }

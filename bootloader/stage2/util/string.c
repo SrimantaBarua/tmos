@@ -26,7 +26,7 @@ void* memmove(void *dstptr, const void *srcptr, size_t len) {
 	uintptr_t dst = (uintptr_t) dstptr;
 	uintptr_t src = (uintptr_t) srcptr;
 	if (dst <= src) {
-		return memcpy (dstptr, srcptr, len);
+		return memcpy(dstptr, srcptr, len);
 	}
 	if (!(len & 3) && !(dst & 3) && !(src & 3)) {
 		dst += len - 4;
