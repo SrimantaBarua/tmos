@@ -827,6 +827,8 @@ protected_mode_start:
 	push	eax
 	mov	eax, vbe_info
 	push	eax
+	mov	eax, MEM_MAP_BASE
+	push	eax
 	jmp	c_code_starts_here
 
 

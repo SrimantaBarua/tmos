@@ -66,13 +66,13 @@ struct vbe_mode_info {
 };
 
 
-void main(struct vbe_info *vbe_info, struct vbe_mode_info *mode_info) {
+void main(uint32_t mem_map_base, struct vbe_info *vbe_info, struct vbe_mode_info *mode_info) {
 	// Initialize the serial port interface
 	serial_init();
 	// Log that we're starting up
 	log(LOG_INFO, "Shu's putting on her Boots..\n");
 	union region *regions = 0;
-	uint32_t num_regions = mem_load_regions(0x10000, &regions);
+	uint32_t num_regions = mem_load_regions(mem_map_base, &regions);
 
 	// Print VESA BIOS information struct
 	log(LOG_INFO, "Ptr:  0x%x\n", vbe_info);
