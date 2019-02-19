@@ -43,13 +43,13 @@
 [BITS 16]
 
 
-LOAD_SECTORS:       equ 13
+LOAD_SECTORS:       equ 14
 
 MEM_MAP_SEG:        equ 0x1000
 MEM_MAP_BASE:       equ 0x10000
 
-VBE_MODE_INFO_BASE: equ 0x20000
-VBE_MODE_INFO_SEG:  equ 0x2000
+VESA_MODE_WIDTH:   equ 1280
+VESA_MODE_HEIGHT:  equ 720
 
 
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
@@ -414,9 +414,8 @@ stage_1_5_start:
 
 	; Get VESA BIOS information
 	call	vesa_get_bios_info
-
-	; Get info on all VESA modes
-	call	vesa_get_modes
+	; Set VESA video mode to 1280 x 720, 32 bits per pixel, direct color RGB
+	call	vesa_set_mode
 
 
 ; Go to protected mode
@@ -651,39 +650,42 @@ vesa_get_bios_info:
 ; Structure to store VESA BIOS information
 align 4
 vbe_info:
-.signature:        db "VBE2"            ; Must be "VESA" to indicate valid VBE support
-.version_min       db 0                 ; VBE minor version
-.version_maj       db 0                 ; VBE major version
-.oem_off:          dw 0                 ; Offset to OEM
-.oem_seg:          dw 0                 ; Segment for OEM
-.capabilities:     dd 0                 ; Bitfield that describes card capabilities
-.video_modes_off:  dw 0                 ; Offset for supported video modes
-.video_modes_seg:  dw 0                 ; Segment for supported video modes
-.video_memory:     dw 0                 ; Amount of video memory in 64KB blocks
-.software_rev:     dw 0                 ; Software revision
-.vendor_off:       dw 0                 ; Offset to card vendor string
-.vendor_seg:       dw 0                 ; Segment for card vendor string
-.product_name_off: dw 0                 ; Offset for product name
-.product_name_seg: dw 0                 ; Segment for product name
-.product_rev_off:  dw 0                 ; Offset for product revision
-.product_rev_seg:  dw 0                 ; Segment for product revision
-.rsvd:             times 222 db  0      ; Reserved
-.oem_data:         times 256 db  0      ; OEM BIOSes store their strings here
+	.signature:        db "VBE2"            ; Must be "VESA" to indicate valid VBE support
+	.version_min       db 0                 ; VBE minor version
+	.version_maj       db 0                 ; VBE major version
+	.oem_off:          dw 0                 ; Offset to OEM
+	.oem_seg:          dw 0                 ; Segment for OEM
+	.capabilities:     dd 0                 ; Bitfield that describes card capabilities
+	.video_modes_off:  dw 0                 ; Offset for supported video modes
+	.video_modes_seg:  dw 0                 ; Segment for supported video modes
+	.video_memory:     dw 0                 ; Amount of video memory in 64KB blocks
+	.software_rev:     dw 0                 ; Software revision
+	.vendor_off:       dw 0                 ; Offset to card vendor string
+	.vendor_seg:       dw 0                 ; Segment for card vendor string
+	.product_name_off: dw 0                 ; Offset for product name
+	.product_name_seg: dw 0                 ; Segment for product name
+	.product_rev_off:  dw 0                 ; Offset for product revision
+	.product_rev_seg:  dw 0                 ; Segment for product revision
+	.rsvd:             times 222 db  0      ; Reserved
+	.oem_data:         times 256 db  0      ; OEM BIOSes store their strings here
 
 
-; Get information about each available VESA video mode
-; Filter for BPP = 32, direct color, and valid RGB masks
+; Set VESA video mode.
+; - Filters modes for 32 bits per pixel, direct color RGB
+; - Checks width and height from global constants
+; - If mode meets these criteria, set mode
 ; Clobbers - AX
-vesa_get_modes:
+vesa_set_mode:
 	push	es
 	push	di
 	push	ds
 	push	si
 	push	cx
-	; Set beginning of buffer where we will be storing mode info
-	mov	ax, VBE_MODE_INFO_SEG
+	push	bx
+	; Set buffer where we'll be storing mode info
+	xor	ax, ax
 	mov	es, ax
-	xor	di, di
+	mov	di, vbe_mode_info
 	; Set source array for video mode
 	mov	ax, word [vbe_info.video_modes_seg]
 	mov	ds, ax
@@ -701,36 +703,67 @@ vesa_get_modes:
 	; Check return
 	cmp	ax, 0x004f
 	jne	.error
+	; Is framebuffer supported?
+	test	byte [vbe_mode_info.attributes], 0x80
+	jz	.loop
 	; Is memory model "Direct color"?
-	cmp	byte [es:di + vbe_mode_info.model], 6
+	cmp	byte [vbe_mode_info.model], 6
 	jne	.loop
 	; Is BPP 32?
-	cmp	byte [es:di + vbe_mode_info.bpp], 32
+	cmp	byte [vbe_mode_info.bpp], 32
 	jne	.loop
 	; Is Red mask 0x08
-	cmp	byte [es:di + vbe_mode_info.red_mask_size], 8
+	cmp	byte [vbe_mode_info.red_mask_size], 8
 	jne	.loop
 	; Is Red mask pos 0x10?
-	cmp	byte [es:di + vbe_mode_info.red_mask_pos], 16
+	cmp	byte [vbe_mode_info.red_mask_pos], 16
 	jne	.loop
 	; Is Green mask 0x08
-	cmp	byte [es:di + vbe_mode_info.green_mask_size], 8
+	cmp	byte [vbe_mode_info.green_mask_size], 8
 	jne	.loop
 	; Is Green mask pos 0x08?
-	cmp	byte [es:di + vbe_mode_info.green_mask_pos], 8
+	cmp	byte [vbe_mode_info.green_mask_pos], 8
 	jne	.loop
 	; Is Blue mask 0x08
-	cmp	byte [es:di + vbe_mode_info.blue_mask_size], 8
+	cmp	byte [vbe_mode_info.blue_mask_size], 8
 	jne	.loop
 	; Is Blue mask pos 0?
-	cmp	byte [es:di + vbe_mode_info.blue_mask_pos], 0
+	cmp	byte [vbe_mode_info.blue_mask_pos], 0
+	jne	.loop
+	; Is width as required?
+	cmp	word [vbe_mode_info.width], VESA_MODE_WIDTH
+	jne	.loop
+	; Is height as required?
+	cmp	word [vbe_mode_info.height], VESA_MODE_HEIGHT
 	jne	.loop
 
-	; Move for next entry
-	add	di, 0x100
-	; Loop
-	jmp	.loop
+; Found mode. Set
+.found:
+	mov	bx, cx
+	and	bx, 0x7fff  ; Zero-out bit 15
+	or	bx, 0x4000  ; Set bit 14, enable linear framebuffer
+	mov	ax, 0x4f02
+	int	0x10
+	; Check return
+	cmp	ax, 0x004f
+	jne	.mode_set_err
 
+	; Restore registers and return
+	pop	bx
+	pop	cx
+	pop	si
+	pop	ds
+	pop	di
+	pop	es
+	ret
+
+.mode_set_err:
+	; Print error message and halt
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_vesa_set_mode_err
+	call	print_16
+	jmp	halt
 .error:
 	; Print error message and halt
 	xor	ax, ax
@@ -739,65 +772,62 @@ vesa_get_modes:
 	call	print_16
 	jmp	halt
 .end:
-	; Zero out this entry
+	; Could not find mode. Error
 	xor	ax, ax
-	mov	cx, 0x80
-	rep	stosw
-	; Restore registers and return
-	pop	cx
-	pop	si
-	pop	ds
-	pop	di
-	pop	es
-	ret
+	mov	ds, ax
+	mov	si, msg_vesa_mode_not_found
+	call	print_16
+	jmp	halt
 
 
 ; Structure of VESA mode information
-struc vbe_mode_info
-	.attribute               : resw 1
-	.window_a                : resb 1
-	.window_b                : resb 1
-	.granularity             : resw 1
-	.window_size             : resw 1
-	.segment_a               : resw 1
-	.segment_b               : resw 1
-	.win_func_ptr            : resd 1
-	.pitch                   : resw 1
-	.width                   : resw 1
-	.height                  : resw 1
-	.w_char                  : resb 1
-	.y_char                  : resb 1
-	.planes                  : resb 1
-	.bpp                     : resb 1
-	.banks                   : resb 1
-	.model                   : resb 1
-	.bank_size               : resb 1
-	.image_pages             : resb 1
-	.reserved0               : resb 1
-	.red_mask_size           : resb 1
-	.red_mask_pos            : resb 1
-	.green_mask_size         : resb 1
-	.green_mask_pos          : resb 1
-	.blue_mask_size          : resb 1
-	.blue_mask_pos           : resb 1
-	.rsvd_mask_size          : resb 1
-	.rsvd_mask_pos           : resb 1
-	.direct_color_attributes : resb 1
-	.framebuffer             : resd 1
-	.off_screen_mem_off      : resd 1
-	.off_screen_mem_size     : resw 1
-	.reserved1               : resb 206
-endstruc
+align 4
+vbe_mode_info:
+	.attributes              : dw 0
+	.window_a                : db 0
+	.window_b                : db 0
+	.granularity             : dw 0
+	.window_size             : dw 0
+	.segment_a               : dw 0
+	.segment_b               : dw 0
+	.win_func_ptr            : dd 0
+	.pitch                   : dw 0
+	.width                   : dw 0
+	.height                  : dw 0
+	.w_char                  : db 0
+	.y_char                  : db 0
+	.planes                  : db 0
+	.bpp                     : db 0
+	.banks                   : db 0
+	.model                   : db 0
+	.bank_size               : db 0
+	.image_pages             : db 0
+	.reserved0               : db 0
+	.red_mask_size           : db 0
+	.red_mask_pos            : db 0
+	.green_mask_size         : db 0
+	.green_mask_pos          : db 0
+	.blue_mask_size          : db 0
+	.blue_mask_pos           : db 0
+	.rsvd_mask_size          : db 0
+	.rsvd_mask_pos           : db 0
+	.direct_color_attributes : db 0
+	.framebuffer             : dd 0
+	.off_screen_mem_off      : dd 0
+	.off_screen_mem_size     : dw 0
+	.reserved1               : times 206 db 0
 
 
 ; Strings
-msg_mem_map_err:       db "[X] Mem map", 0x0A, 0x0D, 0x00
-msg_mem_map_ok:        db "[+] Mem map", 0x0A, 0x0D, 0x00
-msg_no_a20:            db "[X] A20 gate", 0x0A, 0x0D, 0x00
-msg_a20_ok:            db "[+] A20 gate", 0x0A, 0x0D, 0x00
-msg_no_vesa:           db "[X] VESA BIOS info", 0x0A, 0x0D, 0x00
-msg_vesa_ok:           db "[+] VESA BIOS info", 0x0A, 0x0D, 0x00
-msg_vesa_get_mode_err: db "[X] Failed to get VESA mode info", 0x0A,0x0D, 0x00
+msg_mem_map_err:         db "[X] Mem map", 0x0A, 0x0D, 0x00
+msg_mem_map_ok:          db "[+] Mem map", 0x0A, 0x0D, 0x00
+msg_no_a20:              db "[X] A20 gate", 0x0A, 0x0D, 0x00
+msg_a20_ok:              db "[+] A20 gate", 0x0A, 0x0D, 0x00
+msg_no_vesa:             db "[X] VESA BIOS info", 0x0A, 0x0D, 0x00
+msg_vesa_ok:             db "[+] VESA BIOS info", 0x0A, 0x0D, 0x00
+msg_vesa_get_mode_err:   db "[X] Failed to get VESA mode info", 0x0A,0x0D, 0x00
+msg_vesa_mode_not_found: db "[X] Failed to set VESA mode", 0x0A,0x0D, 0x00
+msg_vesa_set_mode_err:   db "[X] Could not find requested VESA mode", 0x0A,0x0D, 0x00
 
 
 ;; ---------------- 32-BIT PROTECTED MODE -----------------
@@ -823,7 +853,7 @@ protected_mode_start:
 
 	; Jump to C code
 	mov	sp, 0x7c00
-	mov	eax, VBE_MODE_INFO_BASE
+	mov	eax, vbe_mode_info
 	push	eax
 	mov	eax, vbe_info
 	push	eax
@@ -860,6 +890,6 @@ gdtr32:
 db "Hello World", 0
 
 ; Padding till the end
-times 2048 - ($ - $$) db 0
+times 2560 - ($ - $$) db 0
 
 c_code_starts_here:

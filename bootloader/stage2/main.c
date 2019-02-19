@@ -96,43 +96,30 @@ void main(uint32_t mem_map_base, struct vbe_info *vbe_info, struct vbe_mode_info
 		vbe_info->vendor.off, vbe_info->product_name.seg, vbe_info->product_name.off,
 		vbe_info->product_rev.seg, vbe_info->product_rev.off);
 
-	log(LOG_INFO, "Video modes:\n");
-	while (1) {
-		if (mode_info->height == 0 && mode_info->width == 0) {
-			break;
-		}
-		if (mode_info->model != 6) {
-			mode_info++;
-			continue;
-		}
-		__log_without_typ("{\n"
-			"  height     : %u\n"
-			"  width      : %u\n"
-			"  pitch      : %u\n"
-			"  bpp        : %u\n"
-			"  model      : %u\n"
-			"  red_mask   : 0x%x\n"
-			"  red_pos    : 0x%x\n"
-			"  green_mask : 0x%x\n"
-			"  green_pos  : 0x%x\n"
-			"  blue_mask  : 0x%x\n"
-			"  blue_pos   : 0x%x\n"
-			"  rsvd_mask  : 0x%x\n"
-			"  rsvd_pos   : 0x%x\n"
-			"  framebuf   : 0x%x\n"
-			"  dircolatt  : 0x%x\n"
-			"}\n",
-			mode_info->height, mode_info->width, mode_info->pitch, mode_info->bpp,
-			mode_info->model, mode_info->red_mask_size, mode_info->red_mask_pos,
-			mode_info->green_mask_size, mode_info->green_mask_pos,
-			mode_info->blue_mask_size, mode_info->blue_mask_pos,
-			mode_info->reserved_mask_size, mode_info->reserved_mask_pos,
-			mode_info->framebuffer, mode_info->direct_color_attributes);
-		mode_info++;
-	}
+	log(LOG_INFO, "Video mode:\n");
+	__log_without_typ("{\n"
+		"  height     : %u\n"
+		"  width      : %u\n"
+		"  pitch      : %u\n"
+		"  bpp        : %u\n"
+		"  model      : %u\n"
+		"  red_mask   : 0x%x\n"
+		"  red_pos    : 0x%x\n"
+		"  green_mask : 0x%x\n"
+		"  green_pos  : 0x%x\n"
+		"  blue_mask  : 0x%x\n"
+		"  blue_pos   : 0x%x\n"
+		"  rsvd_mask  : 0x%x\n"
+		"  rsvd_pos   : 0x%x\n"
+		"  framebuf   : 0x%x\n"
+		"  dircolatt  : 0x%x\n"
+		"}\n",
+		mode_info->height, mode_info->width, mode_info->pitch, mode_info->bpp,
+		mode_info->model, mode_info->red_mask_size, mode_info->red_mask_pos,
+		mode_info->green_mask_size, mode_info->green_mask_pos, mode_info->blue_mask_size,
+		mode_info->blue_mask_pos, mode_info->reserved_mask_size,
+		mode_info->reserved_mask_pos, mode_info->framebuffer,
+		mode_info->direct_color_attributes);
 
-	volatile uint32_t *ptr = 0xb8000;
-	*ptr = 0x2f4b2f4f;
-	PANIC("Test panic: %d\n", 3);
 	__asm__ __volatile__ ("cli; hlt; jmp $" : : : );
 }

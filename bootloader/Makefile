@@ -13,7 +13,7 @@ all: $(disk_img)
 $(disk_img): $(stage_1) stage_2
 	dd if=/dev/zero of=disk.img bs=512 count=2048
 	dd if=$(stage_1) of=disk.img conv=notrunc
-	dd if=$(stage_2) of=disk.img conv=notrunc bs=512 seek=4
+	dd if=$(stage_2) of=disk.img conv=notrunc bs=512 seek=5
 
 clean:
 	rm -f $(stage_1) $(stage_2)
