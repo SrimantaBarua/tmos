@@ -25,9 +25,9 @@
 // Our memory region format
 union region {
 	struct {
-		uint64_t _rsvd0 : 8;
+		uint64_t _rsvd0 : 12;
 		uint64_t start  : 44;
-		uint64_t _rsvd1 : 10;
+		uint64_t _rsvd1 : 6;
 		uint64_t type   : 2;
 	} val;
 	uint64_t raw;
