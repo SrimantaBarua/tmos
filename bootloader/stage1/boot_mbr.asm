@@ -43,7 +43,13 @@
 [BITS 16]
 
 
-LOAD_SECTORS: equ 23
+LOAD_SECTORS:       equ 13
+
+MEM_MAP_SEG:        equ 0x1000
+MEM_MAP_BASE:       equ 0x10000
+
+VBE_MODE_INFO_BASE: equ 0x20000
+VBE_MODE_INFO_SEG:  equ 0x2000
 
 
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
@@ -58,18 +64,22 @@ start:
 ;     AH = 0x0E
 ;     AL = <ascii char to print>
 ; Params -  Pointer to string in DS:SI
+; Returns - AX = number of bytes written
 ; Clobbers - SI, Flags
 print_16:
-	push	ax
+	push	cx
+	xor	cx, cx
 .loop:
 	lodsb
 	or	al, al
 	jz	.done
 	mov	ah, 0x0e
 	int	0x10
+	inc	cx
 	jmp	.loop
 .done:
-	pop	ax
+	mov	ax, cx
+	pop	cx
 	ret
 
 
@@ -83,8 +93,8 @@ print_16:
 ;     Carry flag is clear
 ;     BX = 0xAA55
 ;     CX & 0x01 == 1 (Device access using packet structure supported)
-; Returns - Ax = 1 if supported, 0 if not supported
-; Clobbers - AX, Flags
+; Returns - AX = 1 if supported, 0 if not supported
+; Clobbers - Flags
 check_int13_ext:
 	push	bx
 	push	dx
@@ -378,7 +388,7 @@ dw 0xAA55
 ; - Gives user a menu to select display mode. (As of now, this mode will stick till next reset)
 stage_1_5_start:
 	; Read BIOS memory map to 0x1000:0x0000 (0x10000)
-	mov	ax, 0x1000
+	mov	ax, MEM_MAP_SEG
 	mov	es, ax
 	mov	di, 8
 	call	int_15_e820_read_mmap
@@ -404,6 +414,9 @@ stage_1_5_start:
 
 	; Get VESA BIOS information
 	call	vesa_get_bios_info
+
+	; Get info on all VESA modes
+	call	vesa_get_modes
 
 
 ; Go to protected mode
@@ -461,6 +474,8 @@ go_to_pmode:
 ; - If no, print error message and halt
 ; All the code related to testing/enabling the A20 line has been modified from the OS-Dev Wiki
 ; article on A20 line (https://wiki.osdev.org/A20_Line)
+;
+; Returns - AX = 1 if enabled, 0 if not
 a20_enable:
 	call	test_a20	; Check if already enabled
 	or	al, al
@@ -589,6 +604,7 @@ test_a20:
 
 
 ; Get VESA BIOS information, including manufacturer, supported modes, available video memory etc.
+; Clobbers - AX
 vesa_get_bios_info:
 	push	es
 	push	di
@@ -636,10 +652,10 @@ vesa_get_bios_info:
 align 4
 vbe_info:
 .signature:        db "VBE2"            ; Must be "VESA" to indicate valid VBE support
-.version_min       dw 0                 ; VBE minor version
-.version_maj       dw 0                 ; VBE major version
-.oem_off:          dd 0                 ; Offset to OEM
-.oem_seg:          dd 0                 ; Segment for OEM
+.version_min       db 0                 ; VBE minor version
+.version_maj       db 0                 ; VBE major version
+.oem_off:          dw 0                 ; Offset to OEM
+.oem_seg:          dw 0                 ; Segment for OEM
 .capabilities:     dd 0                 ; Bitfield that describes card capabilities
 .video_modes_off:  dw 0                 ; Offset for supported video modes
 .video_modes_seg:  dw 0                 ; Segment for supported video modes
@@ -655,12 +671,133 @@ vbe_info:
 .oem_data:         times 256 db  0      ; OEM BIOSes store their strings here
 
 
-msg_mem_map_err: db "[X] Mem map", 0x0A, 0x0D, 0x00
-msg_mem_map_ok:  db "[+] Mem map", 0x0A, 0x0D, 0x00
-msg_no_a20:      db "[X] A20 gate", 0x0A, 0x0D, 0x00
-msg_a20_ok:      db "[+] A20 gate", 0x0A, 0x0D, 0x00
-msg_no_vesa:     db "[X] VESA BIOS info", 0x0A, 0x0D, 0x00
-msg_vesa_ok:     db "[+] VESA BIOS info", 0x0A, 0x0D, 0x00
+; Get information about each available VESA video mode
+; Filter for BPP = 32, direct color, and valid RGB masks
+; Clobbers - AX
+vesa_get_modes:
+	push	es
+	push	di
+	push	ds
+	push	si
+	push	cx
+	; Set beginning of buffer where we will be storing mode info
+	mov	ax, VBE_MODE_INFO_SEG
+	mov	es, ax
+	xor	di, di
+	; Set source array for video mode
+	mov	ax, word [vbe_info.video_modes_seg]
+	mov	ds, ax
+	mov	si, word [vbe_info.video_modes_off]
+.loop:
+	; Get next mode
+	mov	cx, word [ds:si]
+	add	si, 2
+	; Check if end
+	cmp	cx, 0xffff
+	je	.end
+	; Get mode info
+	mov	ax, 0x4f01
+	int	0x10
+	; Check return
+	cmp	ax, 0x004f
+	jne	.error
+	; Is memory model "Direct color"?
+	cmp	byte [es:di + vbe_mode_info.model], 6
+	jne	.loop
+	; Is BPP 32?
+	cmp	byte [es:di + vbe_mode_info.bpp], 32
+	jne	.loop
+	; Is Red mask 0x08
+	cmp	byte [es:di + vbe_mode_info.red_mask_size], 8
+	jne	.loop
+	; Is Red mask pos 0x10?
+	cmp	byte [es:di + vbe_mode_info.red_mask_pos], 16
+	jne	.loop
+	; Is Green mask 0x08
+	cmp	byte [es:di + vbe_mode_info.green_mask_size], 8
+	jne	.loop
+	; Is Green mask pos 0x08?
+	cmp	byte [es:di + vbe_mode_info.green_mask_pos], 8
+	jne	.loop
+	; Is Blue mask 0x08
+	cmp	byte [es:di + vbe_mode_info.blue_mask_size], 8
+	jne	.loop
+	; Is Blue mask pos 0?
+	cmp	byte [es:di + vbe_mode_info.blue_mask_pos], 0
+	jne	.loop
+
+	; Move for next entry
+	add	di, 0x100
+	; Loop
+	jmp	.loop
+
+.error:
+	; Print error message and halt
+	xor	ax, ax
+	mov	ds, ax
+	mov	si, msg_vesa_get_mode_err
+	call	print_16
+	jmp	halt
+.end:
+	; Zero out this entry
+	xor	ax, ax
+	mov	cx, 0x80
+	rep	stosw
+	; Restore registers and return
+	pop	cx
+	pop	si
+	pop	ds
+	pop	di
+	pop	es
+	ret
+
+
+; Structure of VESA mode information
+struc vbe_mode_info
+	.attribute               : resw 1
+	.window_a                : resb 1
+	.window_b                : resb 1
+	.granularity             : resw 1
+	.window_size             : resw 1
+	.segment_a               : resw 1
+	.segment_b               : resw 1
+	.win_func_ptr            : resd 1
+	.pitch                   : resw 1
+	.width                   : resw 1
+	.height                  : resw 1
+	.w_char                  : resb 1
+	.y_char                  : resb 1
+	.planes                  : resb 1
+	.bpp                     : resb 1
+	.banks                   : resb 1
+	.model                   : resb 1
+	.bank_size               : resb 1
+	.image_pages             : resb 1
+	.reserved0               : resb 1
+	.red_mask_size           : resb 1
+	.red_mask_pos            : resb 1
+	.green_mask_size         : resb 1
+	.green_mask_pos          : resb 1
+	.blue_mask_size          : resb 1
+	.blue_mask_pos           : resb 1
+	.rsvd_mask_size          : resb 1
+	.rsvd_mask_pos           : resb 1
+	.direct_color_attributes : resb 1
+	.framebuffer             : resd 1
+	.off_screen_mem_off      : resd 1
+	.off_screen_mem_size     : resw 1
+	.reserved1               : resb 206
+endstruc
+
+
+; Strings
+msg_mem_map_err:       db "[X] Mem map", 0x0A, 0x0D, 0x00
+msg_mem_map_ok:        db "[+] Mem map", 0x0A, 0x0D, 0x00
+msg_no_a20:            db "[X] A20 gate", 0x0A, 0x0D, 0x00
+msg_a20_ok:            db "[+] A20 gate", 0x0A, 0x0D, 0x00
+msg_no_vesa:           db "[X] VESA BIOS info", 0x0A, 0x0D, 0x00
+msg_vesa_ok:           db "[+] VESA BIOS info", 0x0A, 0x0D, 0x00
+msg_vesa_get_mode_err: db "[X] Failed to get VESA mode info", 0x0A,0x0D, 0x00
 
 
 ;; ---------------- 32-BIT PROTECTED MODE -----------------
@@ -686,6 +823,8 @@ protected_mode_start:
 
 	; Jump to C code
 	mov	sp, 0x7c00
+	mov	eax, VBE_MODE_INFO_BASE
+	push	eax
 	mov	eax, vbe_info
 	push	eax
 	jmp	c_code_starts_here
