@@ -43,7 +43,7 @@
 [BITS 16]
 
 
-LOAD_SECTORS:       equ 14
+LOAD_SECTORS:       equ 19
 
 MEM_MAP_SEG:        equ 0x1000
 MEM_MAP_BASE:       equ 0x10000

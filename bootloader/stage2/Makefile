@@ -21,7 +21,16 @@ stage_2:=stage2.bin
 stage_2_elf:=stage2.elf
 
 asm_objs:=asm/entry.o
-c_objs:=main.o mem.o io/serial.o io/port_io.o util/log.o util/fmt.o util/intutil.o util/string.o
+c_objs:=\
+main.o \
+mem.o \
+io/serial.o \
+io/port_io.o \
+util/log.o \
+util/fmt.o \
+util/intutil.o \
+util/string.o \
+display.o
 
 crti_obj:=crt/crti.o
 crtn_obj:=crt/crtn.o

@@ -12,13 +12,15 @@ void* memcpy(void *dstptr, const void *srcptr, size_t len) {
 	if (!(len & 3) && !(dst & 3) && !(src & 3)) {
 		len >>= 2;
 		__asm__ __volatile__ ("cld; rep movsd;\n"
-				      : :"S"(src), "D"(dst), "c"(len)
-				      :"memory");
+				      :
+				      : "S"(src), "D"(dst), "c"(len)
+				      : "cc", "memory");
 		return dstptr;
 	}
 	__asm__ __volatile__ ("cld; rep movsb;\n"
-			      : :"S"(src), "D"(dst), "c"(len)
-			      :"memory");
+			      :
+			      : "S"(src), "D"(dst), "c"(len)
+			      : "cc", "memory");
 	return dstptr;
 }
 
@@ -33,15 +35,17 @@ void* memmove(void *dstptr, const void *srcptr, size_t len) {
 		src += len - 4;
 		len >>= 2;
 		__asm__ __volatile__ ("std; rep movsd; cld;\n"
-				      : :"S"(src), "D"(dst), "c"(len)
-				      :"memory");
+				      :
+				      : "S"(src), "D"(dst), "c"(len)
+				      : "cc", "memory");
 		return dstptr;
 	}
 	dst += len - 1;
 	src += len - 1;
 	__asm__ __volatile__ ("std; rep movsb; cld;\n"
-			      : :"S"(src), "D"(dst), "c"(len)
-			      :"memory");
+			      :
+			      : "S"(src), "D"(dst), "c"(len)
+			      : "cc", "memory");
 	return dstptr;
 }
 
@@ -64,14 +68,16 @@ void* memset(void *dstptr, int val, size_t len) {
                 uint32_t data = (uint32_t) byte << 24 | (uint32_t) byte << 16
 			| (uint32_t) byte << 8 | (uint32_t) byte;
 		len >>= 2;
-                __asm__ __volatile__ ("rep stosd;\n"
-				      : :"D"(dst), "a"(data), "c"(len)
-				      :"memory");
+                __asm__ __volatile__ ("cld; rep stosd;\n"
+				      :
+				      : "D"(dst), "a"(data), "c"(len)
+				      : "cc", "memory");
                 return dstptr;
         }
-        __asm__ __volatile__ ("rep stosb;\n"
-			      : :"D"(dst), "a"(byte), "c"(len)
-			      :"memory");
+        __asm__ __volatile__ ("cld; rep stosb;\n"
+			      :
+			      : "D"(dst), "a"(byte), "c"(len)
+			      : "cc", "memory");
 	return dstptr;
 }
 
