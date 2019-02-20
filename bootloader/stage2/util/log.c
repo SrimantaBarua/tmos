@@ -4,6 +4,7 @@
 
 #include <log.h>
 #include <serial.h>
+#include <term.h>
 #include <fmt.h>
 
 // Get string for given log type
@@ -37,4 +38,13 @@ void __log_without_typ(const char *fmt, ...) {
 	va_start(ap, fmt);
 	fmt_write(serial_write_str, fmt, ap);
 	va_end(ap);
+}
+
+// Log a formatted string to screen
+void vlog(const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	fmt_write(term_write_str, fmt, ap);
+	va_end(ap);
+	display_flush();
 }

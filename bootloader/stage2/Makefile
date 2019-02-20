@@ -30,7 +30,8 @@ util/log.o \
 util/fmt.o \
 util/intutil.o \
 util/string.o \
-display.o
+display.o \
+term.o
 
 crti_obj:=crt/crti.o
 crtn_obj:=crt/crtn.o

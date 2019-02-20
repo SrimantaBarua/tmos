@@ -30,5 +30,8 @@ void display_rect(uint16_t ytl, uint16_t xtl, uint16_t ybr, uint16_t xbr, struct
 // Draw a 16x8 character of given color
 void display_char(char c, uint16_t ytl, uint16_t xtl, struct color color);
 
+// Scroll display down by given number of rows, and color the new pixels with color
+void display_scroll_down(uint16_t height, struct color color);
+
 // Flush memory buffer to display buffer
 void display_flush();

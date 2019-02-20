@@ -113,6 +113,20 @@ void display_char(char c, uint16_t ytl, uint16_t xtl, struct color color) {
 }
 
 
+// Scroll display down by given number of rows, and color the new pixels with color
+void display_scroll_down(uint16_t height, struct color color) {
+	uint32_t addr, off, amt;
+	if (height >= _height) {
+		return display_clear(color);
+	}
+	addr = (uint32_t) _memb;
+	off = height * _pitch;
+	amt = (_height - height) * _pitch;
+	memcpy((void*) addr, (void*) addr + off, amt);
+	display_rect(_height - height, 0, _height - 1, _width - 1, color);
+}
+
+
 // Flush memory buffer to display buffer
 void display_flush() {
 	if (!_is_init) {

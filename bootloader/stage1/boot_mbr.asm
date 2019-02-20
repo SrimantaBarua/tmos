@@ -43,13 +43,13 @@
 [BITS 16]
 
 
-LOAD_SECTORS:       equ 19
+LOAD_SECTORS:       equ 20
 
 MEM_MAP_SEG:        equ 0x1000
 MEM_MAP_BASE:       equ 0x10000
 
 VESA_MODE_WIDTH:   equ 1280
-VESA_MODE_HEIGHT:  equ 720
+VESA_MODE_HEIGHT:  equ 768
 
 
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
@@ -334,8 +334,8 @@ halt:
 
 
 ; Data
-msg_int13_ext_yes: db "[+] int 13h ext", 0x0A, 0x0D, 0x00
-msg_int13_ext_no:  db "[X] int 13h ext", 0x0A, 0x0D, 0x00
+msg_int13_ext_yes:   db "[+] int 13h ext", 0x0A, 0x0D, 0x00
+msg_int13_ext_no:    db "[X] int 13h ext", 0x0A, 0x0D, 0x00
 msg_read_sectors_no: db "[X] read_sectors failed", 0x0A, 0x0D, 0x00
 
 drive_number:   db 0

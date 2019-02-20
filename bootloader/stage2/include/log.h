@@ -18,6 +18,9 @@ void log(enum log_type type, const char *fmt, ...);
 // Log without log type (Useful for panics)
 void __log_without_typ(const char *fmt, ...);
 
+// Log a formatted string to screen
+void vlog(const char *fmt, ...);
+
 // Macros for asserts, panics etc
 #define PANIC(fmt, ...) { \
 	__log_without_typ("[PANIC]: %s:%d %s(): ", __FILE__, __LINE__, __func__); \
