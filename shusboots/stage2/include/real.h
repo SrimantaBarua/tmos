@@ -15,3 +15,6 @@ struct real_ptr {
 
 // Get linear pointer corresponding to real mode pointer
 #define real_ptr_to_linear(rp) ((((uint32_t) (rp).seg) << 4) | (uint32_t) (rp).off)
+
+// Run a function in real mode
+uint32_t real_call(void (*func) (void*), uint32_t arg_count, ...);

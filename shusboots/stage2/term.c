@@ -24,9 +24,9 @@ void term_init(const struct vbe_mode_info *vbe_mode_info) {
 	_height = vbe_mode_info->height / CHEIGHT;
 	_width = vbe_mode_info->width / CWIDTH;
 	display_init(vbe_mode_info);
-	display_clear(_black);
-	display_flush();
 	_is_init = true;
+	term_reset();
+	display_flush();
 }
 
 

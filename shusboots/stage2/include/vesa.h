@@ -1,10 +1,8 @@
 // (C) 2019 Srimanta Barua
 //
-// The stage 1.5 of the bootloader reads in VESA BIOS information from the BIOS, selects and sets
-// a display mode, and sends pointers to structures for VESA BIOS information and display mode
-// information to our C code.
+// Interface for interacting with the real-mode code for VESA.
 //
-// The selected mode is guaranteed to be a 32-bit direct-color RGB mode with framebuffer support.
+// This initializes the subsystem, and sets desired mode (or the closest approximate)
 
 
 #pragma once
@@ -65,3 +63,13 @@ struct vbe_mode_info {
 	uint8_t  reserved1[206];
 };
 
+
+// Initialize VESA subsystem with a direct-color mode with given screen width, height
+// and bits per pixel
+// Returns pointer to vbe_mode_info struct on success, NULL on failure
+struct vbe_mode_info* vesa_init(uint16_t width, uint16_t height, uint8_t bpp);
+
+
+// Set the VESA mode
+// Returns pointer to vbe_mode_info struct on success, NULL on failure
+struct vbe_mode_info* vesa_set_mode(uint16_t width, uint16_t height, uint8_t bpp);

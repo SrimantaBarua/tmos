@@ -20,7 +20,7 @@ LINKER_SCRIPT:=linker.ld
 stage_2:=stage2.bin
 stage_2_elf:=stage2.elf
 
-asm_objs:=asm/entry.o
+asm_objs:=asm/entry.o asm/real_mode.o
 c_objs:=\
 main.o \
 mem.o \
@@ -31,7 +31,8 @@ util/fmt.o \
 util/intutil.o \
 util/string.o \
 display.o \
-term.o
+term.o \
+vesa.o
 
 crti_obj:=crt/crti.o
 crtn_obj:=crt/crtn.o

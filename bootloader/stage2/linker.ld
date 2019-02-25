@@ -1,9 +1,9 @@
 ENTRY(stage2_start)
 
 SECTIONS {
-	. = 0x8600;
+	. = 0x7e00;
 
-	.stage2_start_section : AT(0x8600) {
+	.stage2_start_section : AT(0x7e00) {
 		KEEP(*(.stage2_start_section*));
 	}
 

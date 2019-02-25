@@ -16,3 +16,6 @@ void term_write_str(const char *str);
 
 // Change color of text or background on terminal
 void term_set_fg_color(struct color fg);
+
+// Reset terminal, clear screen
+void term_reset();
