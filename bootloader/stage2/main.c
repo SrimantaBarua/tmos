@@ -8,12 +8,17 @@
 #include <log.h>
 #include <vesa.h>
 #include <term.h>
+#include <part.h>
+#include <disk.h>
+#include <fs/fs.h>
 
 
-void main(uint32_t mem_map_base) {
+void main(uint32_t mem_map_base, uint8_t boot_drive) {
 	union region *regions = 0;
-	uint32_t num_regions;
+	uint32_t num_regions, i;
 	struct vbe_mode_info *mode_info;
+	struct mbr_part *partitions;
+	struct fs fs;
 
 	// Initialize the serial port interface
 	serial_init();
@@ -28,14 +33,26 @@ void main(uint32_t mem_map_base) {
 
 	// Initialize terminal
 	term_init(mode_info);
-	vlog("Testing display\n");
 
-	// Set new mode
-	if (!(mode_info = vesa_set_mode(1024, 768, 32))) {
+	// Initialize disk subsystem
+	if (disk_init(boot_drive) < 0) {
 		return;
 	}
-	term_init(mode_info);
-	vlog("Testing display after resize\n");
 
-	term_reset();
+	// Get partition info
+	partitions = (struct mbr_part*) 0x7dbe;
+	for (i = 0; i < 4; i++) {
+		if (partitions[i].status == 0x80) {
+			break;
+		}
+	}
+	if (i == 4) {
+		log(LOG_ERR, "Failed to find bootable partition\n");
+		return;
+	}
+
+	// Bootable
+	log(LOG_INFO, "Bootable partition: %u\n", i);
+	vlog("Bootable partition: %u\n", i);
+	fs_init(&fs, partitions[i].lba_first, partitions[i].num_sectors);
 }

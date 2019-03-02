@@ -6,6 +6,10 @@
 ; This file can also be a convenient place to put Assembly routines later..
 
 
+extern __bss_start_addr__
+extern __bss_end_addr__
+
+
 MEM_MAP_SEG:        equ 0x1000
 MEM_MAP_BASE:       equ 0x10000
 
@@ -22,7 +26,16 @@ section .stage2_start_section
 ; - Gives user a menu to select display mode. (As of now, this mode will stick till next reset)
 global stage2_start
 stage2_start:
-	; Read BIOS memory map to 0x1000:0x0000 (0x10000)
+	; Store drive number
+	mov	byte [drive_number], dl
+	; Zero-out BSS
+	mov	di, __bss_start_addr__
+	mov	cx, __bss_end_addr__
+	sub	cx, di
+	xor	al, al
+	cld
+	rep	stosb
+	; Read BIOS memory map to 0x2000:0x0000 (0x20000)
 	mov	ax, MEM_MAP_SEG
 	mov	es, ax
 	mov	di, 8
@@ -38,7 +51,7 @@ stage2_start:
 
 .mem_map_ok:
 	; Store number of entries
-	mov	cx, 0x1000
+	mov	cx, MEM_MAP_SEG
 	mov	ds, cx
 	mov	word [ds:0], ax
 	mov	word [ds:2], 0
@@ -359,115 +372,6 @@ test_a20:
 	ret
 
 
-; Get VESA BIOS information, including manufacturer, supported modes, available video memory etc.
-; Returns - AX = pointer to VESA BIOS info if valid, NULL otherwise
-global real_vesa_get_bios_info
-real_vesa_get_bios_info:
-	push	es
-	push	di
-	; Set segment:offset for storing VESA BIOS info
-	xor	ax, ax
-	mov	es, ax
-	mov	di, vbe_info
-	; Read info
-	mov	ax, 0x4f00
-	int	0x10
-	; Check return status
-	cmp	ax, 0x004f
-	jne	.no_vesa
-	; Check signature
-	cmp	byte [vbe_info.signature], 'V'
-	jne	.no_vesa
-	cmp	byte [vbe_info.signature + 1], 'E'
-	jne	.no_vesa
-	cmp	byte [vbe_info.signature + 2], 'S'
-	jne	.no_vesa
-	cmp	byte [vbe_info.signature + 3], 'A'
-	jne	.no_vesa
-	; Valid VESA. Set pointer
-	mov	ax, vbe_info
-	jmp	.done
-.no_vesa:
-	; NULL out pointer
-	xor	ax, ax
-.done:
-	pop	di
-	pop	es
-	ret
-
-
-; Get VESA mode information for given mode number
-; Params - VESA mode number (word)
-; Returns - Pointer to mode info struct if valid, NULL on failure
-global real_vesa_get_mode_info
-real_vesa_get_mode_info:
-	; Store registers
-	push	bp
-	mov	bp, sp
-	push	es
-	push	di
-	; Set buffer where we'll be storing mode info
-	xor	ax, ax
-	mov	es, ax
-	mov	di, vbe_mode_info
-	; Get mode number
-	mov	cx, word [bp + 4]
-	; Check if end mode
-	cmp	cx, 0xffff
-	je	.invalid
-	; Get mode info
-	mov	ax, 0x4f01
-	int	0x10
-	; Check return
-	cmp	ax, 0x004f
-	jne	.invalid
-	; Return pointer
-	mov	ax, vbe_mode_info
-	jmp	.done
-.invalid:
-	; Return NULL
-	xor	ax, ax
-.done:
-	; Restore registers and return
-	pop	di
-	pop	es
-	pop	bp
-	ret
-
-
-; Set VESA video mode.
-; Params  - VESA mode number (word)
-; Returns - 1 on success, 0 on failure
-global real_vesa_set_mode
-real_vesa_set_mode:
-	; Store BX
-	push	bp
-	mov	bp, sp
-	push	bx
-	; Get mode number
-	mov	bx, word [bp + 4]
-	cmp	bx, 0xffff
-	je	.invalid
-	; Set mode
-	and	bx, 0x7fff  ; Zero-out bit 15
-	or	bx, 0x4000  ; Set bit 14, enable linear framebuffer
-	mov	ax, 0x4f02
-	int	0x10
-	; Check return
-	cmp	ax, 0x004f
-	jne	.invalid
-	; Return success
-	mov	ax, 1
-	jmp	.done
-.invalid:
-	xor	ax, ax
-.done:
-	; Restore registers and return
-	pop	bx
-	pop	bp
-	ret
-
-
 ;; ---------------- 32-BIT PROTECTED MODE -----------------
 
 [BITS 32]
@@ -488,7 +392,10 @@ protected_mode_start:
 
 	; Jump to C code
 	mov	sp, 0x7c00
-	sub	sp, 12
+	sub	sp, 8
+	xor	eax, eax
+	mov	al, byte [drive_number]
+	push	eax
 	mov	eax, MEM_MAP_BASE
 	push	eax
 	extern	main
@@ -505,67 +412,6 @@ halt_32:
 
 
 section .data
-
-; Structure to store VESA BIOS information
-align 4
-vbe_info:
-	.signature:        db "VBE2"            ; Must be "VESA" to indicate valid VBE support
-	.version_min       db 0                 ; VBE minor version
-	.version_maj       db 0                 ; VBE major version
-	.oem_off:          dw 0                 ; Offset to OEM
-	.oem_seg:          dw 0                 ; Segment for OEM
-	.capabilities:     dd 0                 ; Bitfield that describes card capabilities
-	.video_modes_off:  dw 0                 ; Offset for supported video modes
-	.video_modes_seg:  dw 0                 ; Segment for supported video modes
-	.video_memory:     dw 0                 ; Amount of video memory in 64KB blocks
-	.software_rev:     dw 0                 ; Software revision
-	.vendor_off:       dw 0                 ; Offset to card vendor string
-	.vendor_seg:       dw 0                 ; Segment for card vendor string
-	.product_name_off: dw 0                 ; Offset for product name
-	.product_name_seg: dw 0                 ; Segment for product name
-	.product_rev_off:  dw 0                 ; Offset for product revision
-	.product_rev_seg:  dw 0                 ; Segment for product revision
-	.rsvd:             times 222 db  0      ; Reserved
-	.oem_data:         times 256 db  0      ; OEM BIOSes store their strings here
-
-
-; Structure of VESA mode information
-align 4
-vbe_mode_info:
-	.attributes              : dw 0
-	.window_a                : db 0
-	.window_b                : db 0
-	.granularity             : dw 0
-	.window_size             : dw 0
-	.segment_a               : dw 0
-	.segment_b               : dw 0
-	.win_func_ptr            : dd 0
-	.pitch                   : dw 0
-	.width                   : dw 0
-	.height                  : dw 0
-	.w_char                  : db 0
-	.y_char                  : db 0
-	.planes                  : db 0
-	.bpp                     : db 0
-	.banks                   : db 0
-	.model                   : db 0
-	.bank_size               : db 0
-	.image_pages             : db 0
-	.reserved0               : db 0
-	.red_mask_size           : db 0
-	.red_mask_pos            : db 0
-	.green_mask_size         : db 0
-	.green_mask_pos          : db 0
-	.blue_mask_size          : db 0
-	.blue_mask_pos           : db 0
-	.rsvd_mask_size          : db 0
-	.rsvd_mask_pos           : db 0
-	.direct_color_attributes : db 0
-	.framebuffer             : dd 0
-	.off_screen_mem_off      : dd 0
-	.off_screen_mem_size     : dw 0
-	.reserved1               : times 206 db 0
-
 
 ; 32-bit GDT
 align 8
@@ -613,6 +459,9 @@ gdtr32:
 .size:	dw ($ - gdt32) - 1
 .off:	dd gdt32
 
+
+; BIOS boot drive number
+drive_number: db 0
 
 
 section .rodata

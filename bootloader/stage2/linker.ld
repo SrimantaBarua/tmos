@@ -22,8 +22,10 @@ SECTIONS {
 	}
 
 	.bss : {
+		__bss_start_addr__ = .;
 		*(.bss*);
 		*(COMMON);
+		__bss_end_addr__ = .;
 	}
 
 	/DISCARD/ : {

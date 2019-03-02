@@ -27,12 +27,15 @@ mem.o \
 io/serial.o \
 io/port_io.o \
 util/log.o \
-util/fmt.o \
-util/intutil.o \
 util/string.o \
 display.o \
 term.o \
-vesa.o
+vesa.o \
+disk.o \
+fs/fs.o \
+fs/fat.o \
+vsprintf.o \
+ctype.o
 
 crti_obj:=crt/crti.o
 crtn_obj:=crt/crtn.o

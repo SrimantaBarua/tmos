@@ -43,7 +43,7 @@
 [BITS 16]
 
 
-LOAD_SECTORS:       equ 20
+LOAD_SECTORS:       equ 24
 
 
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
@@ -213,6 +213,7 @@ main:
 	jz	.no_read_sectors
 .read_sectors:
 	; Jump to starting of the code for stage 1.5
+	mov	dl, byte [drive_number]
 	jmp	stage_2_start
 .no_read_sectors:
 	; Print message
