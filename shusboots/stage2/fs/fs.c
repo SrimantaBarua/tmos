@@ -13,11 +13,15 @@
 
 // Known FS backends
 extern const struct fs_backend fs_backend_fat12;
+extern const struct fs_backend fs_backend_fat16;
+extern const struct fs_backend fs_backend_fat32;
 
 
 // Static array of backends
 static const struct fs_backend *_backends[] = {
 	&fs_backend_fat12,
+	&fs_backend_fat16,
+	&fs_backend_fat32,
 };
 
 

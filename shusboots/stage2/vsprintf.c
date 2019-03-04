@@ -247,6 +247,9 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap) {
 				s = "(null)";
 			}
 			slen = strlen(s);
+			if (precision >= 0 && precision < slen) {
+				slen = precision;
+			}
 			if (!(flags & LEFT)) {
 				while (slen < field_width--) {
 					if (str <= end) {

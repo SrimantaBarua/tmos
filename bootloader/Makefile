@@ -17,17 +17,17 @@ sb_cfg=boot.cfg
 
 all: $(disk_img)
 
-	
+
 $(disk_img): $(stage_1) stage_2
-	dd if=/dev/zero of=$(disk_img) bs=4096 count=512
+	dd if=/dev/zero of=$(disk_img) bs=4096 count=257
 	parted --script $(disk_img) \
 		mklabel msdos \
 		mkpart primary fat32 1MiB 100% \
 		set 1 boot on
 	dd if=$(stage_1) of=$(disk_img) conv=notrunc bs=446 count=1
-	dd if=$(stage_2) of=$(disk_img) conv=notrunc bs=512 seek=1 count=24
-	dd if=/dev/zero of=tmp_disk bs=4096 count=1792
-	mkfs.fat -F12 tmp_disk -n BOOTVOL
+	dd if=$(stage_2) of=$(disk_img) conv=notrunc bs=512 seek=1 count=26
+	dd if=/dev/zero of=tmp_disk bs=4096 count=3840
+	mkfs.fat -F16 tmp_disk -n BOOTVOL
 	mcopy -i tmp_disk $(sb_cfg) ::/
 	dd if=tmp_disk of=$(disk_img) conv=notrunc bs=4096 seek=256
 	rm -f tmp_disk

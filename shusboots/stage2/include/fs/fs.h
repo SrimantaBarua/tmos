@@ -27,11 +27,10 @@ struct f_handle {
 
 // A file system backend
 struct fs_backend {
-	bool (*ident) (void *ptr, uint32_t num_sectors); // Verify if this backend is appropriate,
-	                                                 // from first sector data
-	int  (*open) (struct fs *fs, const char *path);  // Open file in FS
-	int  (*close) (int fd);                          // Close file
-	int  (*read) (int fd, void *buf, int len);       // Read data from file
+	bool (*ident) (const void *ptr, uint32_t num_sectors); // Verify if backend is appropriate
+	int  (*open) (struct fs *fs, const char *path);        // Open file in FS
+	int  (*close) (int fd);                                // Close file
+	int  (*read) (int fd, void *buf, int len);             // Read data from file
 };
 
 

@@ -43,7 +43,7 @@
 [BITS 16]
 
 
-LOAD_SECTORS:       equ 24
+LOAD_SECTORS:       equ 26
 
 
 ; Some BIOSes load us at 0x07c0:0x0000 while others load us at 0x0000:0x7c00. Normalize to
