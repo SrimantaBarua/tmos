@@ -35,11 +35,11 @@ struct fat_date {
 
 // A FAT directory entry
 struct fat_dirent {
-	char                 name[8];
-	char                 ext[3];
+	uint8_t              name[8];
+	uint8_t              ext[3];
 	uint8_t              attrib;
 	uint8_t              user_attrib;
-	char                 undelete;
+	uint8_t              undelete;
 	struct fat_timestamp create_time;
 	struct fat_date      create_date;
 	struct fat_date      access_date;
@@ -183,25 +183,14 @@ static bool _fat32_ident(const void *ptr, uint32_t num_sectors) {
 
 // List FAT directory
 static void _list_dir(const struct fat_dirent *d, uint16_t num_ent) {
-	uint16_t i, j;
-	bool no_dirent;
+	uint16_t i;
 	log(LOG_INFO, "List directory: /:\n");
 	__log_without_typ("  Filename        Created                Modified              Size\n");
 	for (i = 0; i < num_ent; i++) {
-		no_dirent = false;
-		for (j = 0; j < 8; j++) {
-			if (d[i].name[j] == '\0') {
-				no_dirent = true;
-				break;
-			}
+		if (d[i].name[0] == 0) {
+			break;
 		}
-		for (j = 0; j < 3; j++) {
-			if (d[i].ext[j] == '\0') {
-				no_dirent = true;
-				break;
-			}
-		}
-		if (no_dirent) {
+		if (d[i].name[0] == 0xe5) {
 			continue;
 		}
 		__log_without_typ("  %.8s.%.3s    %4u-%02u-%02u %02u:%02u:%02u    %4u-%02u-%02u"
@@ -235,6 +224,12 @@ static bool _find_file(const struct fat_dirent *d, uint16_t num_ent, const char 
 	}
 	// Go over each directory entry
 	for (i = 0; i < num_ent; i++) {
+		if (d[i].name[0] == 0) {
+			return false;
+		}
+		if (d[i].name[0] == 0xe5) {
+			continue;
+		}
 		is_file = true;
 		// Compare name
 		for (j = 0; j < dotidx; j++) {
