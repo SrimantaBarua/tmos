@@ -13,7 +13,11 @@
 #include <fs/fs.h>
 
 
+static char _cfg_buf[512] = { 0 };
+
+
 void main(uint32_t mem_map_base, uint8_t boot_drive) {
+	int len;
 	union region *regions = 0;
 	uint32_t num_regions, i;
 	struct vbe_mode_info *mode_info;
@@ -53,6 +57,16 @@ void main(uint32_t mem_map_base, uint8_t boot_drive) {
 
 	// Bootable
 	log(LOG_INFO, "Bootable partition: %u\n", i);
-	vlog("Bootable partition: %u\n", i);
-	fs_init(&fs, partitions[i].lba_first, partitions[i].num_sectors);
+	if (fs_init(&fs, partitions[i].lba_first, partitions[i].num_sectors) < 0) {
+		return;
+	}
+	if (fs.backend && fs.backend->read) {
+		if ((len = fs.backend->read(&fs, "/boot.cfg", (void*) _cfg_buf, sizeof(_cfg_buf) - 1)) < 0) {
+			return;
+		}
+		_cfg_buf[len] = '\0';
+		log(LOG_INFO, "/boot.cfg:\n%s\n", _cfg_buf);
+	} else {
+		vlog("main: Can't read files with this backend\n");
+	}
 }
