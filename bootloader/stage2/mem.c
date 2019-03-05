@@ -187,8 +187,7 @@ static uint32_t _translate(struct bios_region *mmap, uint32_t len, union region 
 // Load an array of memory regions from addr of BIOS memory map, and return number of regions
 uint32_t mem_load_regions(uint32_t addr, union region **regions) {
 	uint32_t i;
-	uint32_t bios_mmap_len = *((uint64_t*) addr);
-	log(LOG_INFO, "addr: 0x%x\n");
+	uint32_t bios_mmap_len = *((uint32_t*) addr);
 	struct bios_region *bios_mmap = (struct bios_region*) (addr + 8);
 	// Sort the map
 	_sort_map(bios_mmap, bios_mmap_len);
