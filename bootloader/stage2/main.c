@@ -13,11 +13,9 @@
 #include <fs/fs.h>
 
 
-static char _cfg_buf[512] = { 0 };
-
-
 void main(uint32_t mem_map_base, uint8_t boot_drive) {
 	int len;
+	char *cfg_buf = (char*) 0x50000;
 	union region *regions = 0;
 	uint32_t num_regions, i;
 	struct vbe_mode_info *mode_info;
@@ -61,11 +59,11 @@ void main(uint32_t mem_map_base, uint8_t boot_drive) {
 		return;
 	}
 	if (fs.backend && fs.backend->read) {
-		if ((len = fs.backend->read(&fs, "/boot.cfg", (void*) _cfg_buf, sizeof(_cfg_buf) - 1)) < 0) {
+		if ((len = fs.backend->read(&fs, "/boot.cfg", cfg_buf, 4096)) < 0) {
 			return;
 		}
-		_cfg_buf[len] = '\0';
-		log(LOG_INFO, "/boot.cfg:\n%s\n", _cfg_buf);
+		cfg_buf[len] = '\0';
+		log(LOG_INFO, "/boot.cfg:\n%s\n", cfg_buf);
 	} else {
 		vlog("main: Can't read files with this backend\n");
 	}

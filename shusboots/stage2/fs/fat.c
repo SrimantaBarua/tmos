@@ -184,8 +184,8 @@ static bool _fat32_ident(const void *ptr, uint32_t num_sectors) {
 // List FAT directory
 static void _list_dir(const struct fat_dirent *d, uint16_t num_ent) {
 	uint16_t i;
-	log(LOG_INFO, "List directory: /:\n");
-	__log_without_typ("  Filename        Created                Modified              Size\n");
+	log(LOG_INFO, "List directory: /:\n"
+		"  Filename        Created                Modified               Size\n");
 	for (i = 0; i < num_ent; i++) {
 		if (d[i].name[0] == 0) {
 			break;
@@ -193,7 +193,7 @@ static void _list_dir(const struct fat_dirent *d, uint16_t num_ent) {
 		if (d[i].name[0] == 0xe5) {
 			continue;
 		}
-		__log_without_typ("  %.8s.%.3s    %4u-%02u-%02u %02u:%02u:%02u    %4u-%02u-%02u"
+		__log_without_typ("  %.8s.%.3s    %4u-%02u-%02u %02u:%02u:%02u    %4u-%02u-%02u "
 				"%02u:%02u:%02u    %u\n", d[i].name, d[i].ext,
 				d[i].create_date.year + 1980, d[i].create_date.month,
 				d[i].create_date.day, d[i].create_time.hours,
@@ -286,7 +286,6 @@ static int _fat12_read(struct fs *fs, const char *path, void *buf, int len) {
 	const char *name;
 	uint16_t fat_num_sectors, root_num_sectors, read_sectors, next_cluster;
 	uint32_t cluster, file_size, fat_sector, root_sector, file_sector, first_data_sector;
-	const uint16_t *fat;
 	if (len < 0) {
 		return -1;
 	}
@@ -324,7 +323,6 @@ static int _fat12_read(struct fs *fs, const char *path, void *buf, int len) {
 		log(LOG_ERR, "fat12_read: Failed to read FAT\n");
 		return -1;
 	}
-	fat = (const uint16_t*) FAT_FAT0_ADDR;
 	// Read first sector of file
 	first_data_sector = root_sector + root_num_sectors;
 	file_sector = (cluster - 2) * rec->sectors_per_cluster + first_data_sector;
@@ -334,6 +332,7 @@ static int _fat12_read(struct fs *fs, const char *path, void *buf, int len) {
 			log(LOG_ERR, "fat12_read: Failed to read file\n");
 			return -1;
 		}
+		((char*) FAT_TEMPBUF_ADDR)[rec->bytes_per_sector] = '\0';
 		// Copy read contents
 		// If we're at end of buffer length, return
 		if (len < rec->bytes_per_sector) {
@@ -362,14 +361,23 @@ static int _fat12_read(struct fs *fs, const char *path, void *buf, int len) {
 		file_sector++;
 		// If we're at end of cluster, move to next cluster
 		if (read_sectors == rec->sectors_per_cluster) {
-			next_cluster = fat[cluster * 3 / 2];
+			next_cluster = *(uint16_t*) (FAT_FAT0_ADDR + cluster + (cluster >> 1));
 			if ((cluster & 1)) {
 				// Odd cluster
-				cluster = next_cluster >> 4;
+				next_cluster = next_cluster >> 4;
 			} else {
 				// Even cluster
-				cluster = next_cluster & 0xfff;
+				next_cluster = next_cluster & 0xfff;
 			}
+			if (next_cluster == 0xff7) {
+				log(LOG_ERR, "fat12_read: Bad cluster: %u\n", next_cluster);
+				return -1;
+			}
+			if (next_cluster >= 0xff8) {
+				log(LOG_ERR, "fat12_read: No more clusters in chain\n");
+				return -1;
+			}
+			cluster = next_cluster;
 			file_sector = (cluster - 2) * rec->sectors_per_cluster + first_data_sector;
 			read_sectors = 0;
 		}
