@@ -11,6 +11,7 @@
 #include <part.h>
 #include <disk.h>
 #include <fs/fs.h>
+#include <boot_cfg.h>
 
 
 void main(uint32_t mem_map_base, uint8_t boot_drive) {
@@ -21,20 +22,13 @@ void main(uint32_t mem_map_base, uint8_t boot_drive) {
 	struct vbe_mode_info *mode_info;
 	struct mbr_part *partitions;
 	struct fs fs;
+	const struct boot_cfg *boot_cfg;
 
 	// Initialize the serial port interface
 	serial_init();
 
 	// Initialize memory regions
 	num_regions = mem_load_regions(mem_map_base, &regions);
-
-	// Initialize VESA subsystem
-	if (!(mode_info = vesa_init(1280, 768, 32))) {
-		return;
-	}
-
-	// Initialize terminal
-	term_init(mode_info);
 
 	// Initialize disk subsystem
 	if (disk_init(boot_drive) < 0) {
@@ -49,12 +43,12 @@ void main(uint32_t mem_map_base, uint8_t boot_drive) {
 		}
 	}
 	if (i == 4) {
-		log(LOG_ERR, "Failed to find bootable partition\n");
+		log(LOG_ERR, "main: Failed to find bootable partition\n");
 		return;
 	}
 
 	// Bootable
-	log(LOG_INFO, "Bootable partition: %u\n", i);
+	log(LOG_INFO, "main: Bootable partition: %u\n", i);
 	if (fs_init(&fs, partitions[i].lba_first, partitions[i].num_sectors) < 0) {
 		return;
 	}
@@ -63,8 +57,17 @@ void main(uint32_t mem_map_base, uint8_t boot_drive) {
 			return;
 		}
 		cfg_buf[len] = '\0';
-		log(LOG_INFO, "/boot.cfg:\n%s\n", cfg_buf);
+		if (!(boot_cfg = boot_cfg_parse(cfg_buf))) {
+			log(LOG_ERR, "main: Failed to parse boot.cfg\n");
+		}
+		// Initialize display
+		if (!(mode_info = vesa_init(boot_cfg->video.width, boot_cfg->video.height, boot_cfg->video.bpp))) {
+			log(LOG_ERR, "main: Failed to select requested video mode\n");
+		} else {
+			term_init(mode_info);
+			vlog("Yo, here\n");
+		}
 	} else {
-		vlog("main: Can't read files with this backend\n");
+		log(LOG_ERR, "main: Can't read files with this backend\n");
 	}
 }

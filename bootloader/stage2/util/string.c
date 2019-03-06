@@ -91,3 +91,13 @@ size_t strlen(const char *s) {
 	return len;
 }
 
+
+int strncmp(const char *s1, const char *s2, size_t n) {
+	size_t i;
+	for (i = 0; i < n && s1[i] && s2[i] && s1[i] == s2[i]; i++);
+	if (i == n || s1[i] == s2[i]) {
+		return 0;
+	} else {
+		return (int) s1[i] - (int) s2[i];
+	}
+}

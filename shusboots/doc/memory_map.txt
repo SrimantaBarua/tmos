@@ -1,0 +1,15 @@
+Memory map for the bootloader
+=============================
+
+As the bootloader grows, it becomes important to know where things are.
+
+      0x00 -      0x400  =    1 KB   =>   Real mode IVT
+     0x400 -     0x7c00  =   30 KB   =>   Stack
+    0x7c00 -     0x7e00  =  512  B   =>   Stage 1
+    0x7e00 -     0xb200  =   13 KB   =>   Stage 2 source
+    0xb200 -     0xb660  =  1.5 KB   =>   Stage 2 BSS
+   0x10000 -    0x20000  =   64 KB   =>   Memory map
+   0x30000 -    0x50000  =  128 KB   =>   File system
+   0x50000 -    0x52000  =    8 KB   =>   boot.cfg
+   0x52000 -    0x54000  =    8 KB   =>   Parsed boot.cfg
+  0x200000 -  0x1200000  =   16 MB   =>   Display memory buffer

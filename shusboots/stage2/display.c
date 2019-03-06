@@ -5,6 +5,10 @@
 #include <stddef.h>
 #include <string.h>
 
+
+#define DISPLAY_MEMBUF 0x200000
+
+
 // Declaration of _CHARBITS (defined below)
 static const uint8_t _CHARBITS[];
 
@@ -36,7 +40,7 @@ static uint8_t  _blue_pos   = 0;      // Bitshift for blue color
 void display_init(const struct vbe_mode_info *vbe_mode_info) {
 	// Store values
 	_fb = (uint32_t*) vbe_mode_info->framebuffer;
-	_memb = (uint32_t*) 0x200000;
+	_memb = (uint32_t*) DISPLAY_MEMBUF;
 	_width = vbe_mode_info->width;
 	_height = vbe_mode_info->height;
 	_pitch = vbe_mode_info->pitch;

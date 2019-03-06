@@ -20,3 +20,6 @@ int memcmp(const void *a, const void *b, size_t n);
 
 // Get length of null terminated string
 size_t strlen(const char *s);
+
+// Compare two strings upto n bytes. Return 0 if identical, non-zero if not
+int strncmp(const char *s1, const char *s2, size_t n);

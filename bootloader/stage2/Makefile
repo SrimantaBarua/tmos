@@ -35,7 +35,9 @@ disk.o \
 fs/fs.o \
 fs/fat.o \
 vsprintf.o \
-ctype.o
+ctype.o \
+stdlib.o \
+boot_cfg.o
 
 crti_obj:=crt/crti.o
 crtn_obj:=crt/crtn.o

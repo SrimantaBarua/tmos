@@ -25,7 +25,7 @@ $(disk_img): $(stage_1) stage_2
 		mkpart primary fat32 1MiB 100% \
 		set 1 boot on
 	dd if=$(stage_1) of=$(disk_img) conv=notrunc bs=446 count=1
-	dd if=$(stage_2) of=$(disk_img) conv=notrunc bs=512 seek=1 count=32
+	dd if=$(stage_2) of=$(disk_img) conv=notrunc bs=512 seek=1 count=34
 	dd if=/dev/zero of=tmp_disk bs=4096 count=3840
 	mkfs.fat -F12 tmp_disk -n BOOTVOL
 	mcopy -i tmp_disk $(sb_cfg) ::/
