@@ -3,7 +3,7 @@
 gcc_ver="8.2.0"
 binutils_ver="2.31.1"
 
-num_cores=$(grep process /proc/cpuinfo | wc -l)
+num_cores=$(grep processor /proc/cpuinfo | wc -l)
 
 gnu_url="https://ftp.gnu.org/gnu"
 
@@ -123,18 +123,23 @@ build_tools() {
 }
 
 
-build_shusboots() {
+build_bootloader() {
 	# 1. Build toolchain
 	build_tools "i686-elf"
-	# 2. Build shusboots
+	# 2. Build bootloader
 	cd "$root_dir"
-	make -C shusboots $1 > /dev/null
+	make -C bootloader $1 > /dev/null
+}
+
+
+print_usage() {
+	echo "USAGE: $0 [ build_bootloader [options] ]"
 }
 
 
 case $# in
 	0)
-		build_shusboots
+		build_bootloader
 		;;
 	1)
 		case $1 in
@@ -142,7 +147,7 @@ case $# in
 				print_usage
 				;;
 			*)
-				build_shusboots $1
+				build_bootloader $1
 				;;
 		esac
 		;;

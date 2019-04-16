@@ -398,8 +398,8 @@ protected_mode_start:
 	push	eax
 	mov	eax, MEM_MAP_BASE
 	push	eax
-	extern	main
-	call	main
+	extern	bmain
+	call	bmain
 
 
 ; Halt the processor

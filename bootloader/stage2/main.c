@@ -14,7 +14,7 @@
 #include <boot_cfg.h>
 
 
-void main(uint32_t mem_map_base, uint8_t boot_drive) {
+void bmain(uint32_t mem_map_base, uint8_t boot_drive) {
 	int len;
 	char *cfg_buf = (char*) 0x50000;
 	union region *regions = 0;
