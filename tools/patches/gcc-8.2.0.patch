@@ -7,7 +7,7 @@ index f2632cd8a..1712867b1 100755
  	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
  	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* \
 -	      | -onefs* | -tirtos* | -phoenix* | -fuchsia* | -redox* | -bme*)
-+	      | -onefs* | -tirtos* | -phoenix* | -fuchsia* | -redox* | -bme* | -shuos*)
++	      | -onefs* | -tirtos* | -phoenix* | -fuchsia* | -redox* | -bme* | -tmos*)
  	# Remember, each alternative MUST END IN *, to match a version number.
  		;;
  	-qnx*)
@@ -19,7 +19,7 @@ index 0f9648608..c17ff1e13 100755
  
  # Check for special fix rules for particular targets
  case $machine in
-+    *-shuos* | \
++    *-tmos* | \
      i?86-*-cygwin* | \
      i?86-*-mingw32* | \
      x86_64-*-mingw32* | \
@@ -31,7 +31,7 @@ index 532c33f4c..4ab5925be 100644
  *-*-rdos*)
    use_gcc_stdint=wrap
    ;;
-+*-*-shuos*)
++*-*-tmos*)
 +  gas=yes
 +  gnu_ld=yes
 +  default_use_cxa_atexit=yes
@@ -43,29 +43,29 @@ index 532c33f4c..4ab5925be 100644
  x86_64-*-elf*)
  	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
  	;;
-+i[34567]86-*-shuos*)
-+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h shuos.h"
++i[34567]86-*-tmos*)
++	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h tmos.h"
 +	;;
-+x86_64-*-shuos*)
-+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h i386/x86-64.h shuos.h"
++x86_64-*-tmos*)
++	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h glibc-stdint.h i386/i386elf.h i386/x86-64.h tmos.h"
 +	;;
  x86_64-*-rtems*)
  	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtemself.h rtems.h"
  	;;
-diff --git a/gcc/config/shuos.h b/gcc/config/shuos.h
+diff --git a/gcc/config/tmos.h b/gcc/config/tmos.h
 new file mode 100644
 index 000000000..b79ad1ca9
 --- /dev/null
-+++ b/gcc/config/shuos.h
++++ b/gcc/config/tmos.h
 @@ -0,0 +1,33 @@
 +// (C) 2018 Srimanta Barua
 +//
-+// Configuration of the toolchain for building shuos
++// Configuration of the toolchain for building tmos
 +
-+#undef  TARGET_SHUOS
-+#define TARGET_SHUOS 1
++#undef  TARGET_TMOS
++#define TARGET_TMOS 1
 +
-+// Default arguments when running *-shuos toolchain
++// Default arguments when running *-tmos toolchain
 +#undef  LIB_SPEC
 +#define LIB_SPEC "-lc" /* link against the C standard library */
 +
@@ -85,7 +85,7 @@ index 000000000..b79ad1ca9
 +#undef TARGET_OS_CPP_BUILTINS
 +#define TARGET_OS_CPP_BUILTINS()             \
 +	do {                                 \
-+		builtin_define("__shuos__"); \
++		builtin_define("__tmos__"); \
 +	} while(0);
 +
 +// Force 4KB alignment of sections on 64-bit systems (LD defaults to 2MB)
@@ -99,11 +99,11 @@ index 11b4acaff..d722631da 100644
  x86_64-*-fuchsia*)
  	tmake_file="$tmake_file t-libgcc-pic"
  	;;
-+i[34567]86-*-shuos*)
++i[34567]86-*-tmos*)
 +	extra_parts="$extra_parts crti.o crtbegin.o crtend.o crtn.o"
 +	tmake_file="$tmake_file t-crtstuff t-crtstuff-pic t-libgcc-pic"
 +	;;
-+x86_64-*-shuos*)
++x86_64-*-tmos*)
 +	extra_parts="$extra_parts crti.o crtbegin.o crtend.o crtn.o"
 +	tmake_file="$tmake_file t-crtstuff t-crtstuff-pic t-libgcc-pic"
 +	;;
@@ -118,7 +118,7 @@ index cb6e3afff..c80a251d8 100644
      AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
      AM_ICONV
      ;;
-+  *-shuos*)
++  *-tmos*)
 +    GLIBCXX_CHECK_COMPILER_FEATURES
 +    GLIBCXX_CHECK_LINKER_FEATURES
 +    GLIBCXX_CHECK_MATH_SUPPORT

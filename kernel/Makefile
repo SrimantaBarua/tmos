@@ -1,12 +1,12 @@
 # (C) 2018 Srimanta Barua
-# Makefile for the shuos kernel
+# Makefile for the tmos kernel
 
 # Configuration options
 ARCH?=x86_64
 OPT?=-O2
 
 # We're fixing the compiler to GCC for now..
-CC:=$(ARCH)-shuos-gcc
+CC:=$(ARCH)-tmos-gcc
 
 # Compiler warnings
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
@@ -14,12 +14,12 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 
 # Compiler and linker flags
 CFLAGS:=-ffunction-sections -fdata-sections -ffreestanding $(OPT) $(WARNINGS)
-CPPFLAGS:=-I../sysroot/usr/include/ -D__SHUOS_CFG_ARCH_$(ARCH)__ -D__SHUOS_KERNEL__
+CPPFLAGS:=-I../sysroot/usr/include/ -D__TMOS_CFG_ARCH_$(ARCH)__ -D__TMOS_KERNEL__
 LDFLAGS:=-nostdlib -Wl,-gc-sections -L.
 LIBS:=-lk
 
 # The kernel ELF binary
-KERNEL:=shuos.kernel
+KERNEL:=tmos.kernel
 
 # Objects which will be linked to make the kernel binary
 OBJS:=klog.o vsprintf.o multiboot2.o mem/memory.o mem/bitmap.o mem/heap.o

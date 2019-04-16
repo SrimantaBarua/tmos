@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <shuos/system.h>
-#include <shuos/memory.h>
+#include <tmos/system.h>
+#include <tmos/memory.h>
 
 // Flags for a page table entry
 #define PTE_FLG_PRESENT        ((uint64_t) (1 << 0))

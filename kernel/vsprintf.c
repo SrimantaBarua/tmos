@@ -2,8 +2,8 @@
 //
 // Writing formatted text to buffer
 
-#include <shuos/system.h>
-#include <shuos/vsprintf.h> 
+#include <tmos/system.h>
+#include <tmos/vsprintf.h> 
 #include <ctype.h>
 #include <stdint.h>
 #include <string.h>

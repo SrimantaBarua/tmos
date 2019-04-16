@@ -2,4 +2,4 @@
 
 #pragma once
 
-#include <shuos/arch/global_consts.h>
+#include <tmos/arch/global_consts.h>

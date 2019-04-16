@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include <shuos/system.h>
+#include <tmos/system.h>
 #include <stdint.h>
-#include <shuos/klog.h>
+#include <tmos/klog.h>
 
 // TSS structure
 struct tss {
@@ -34,19 +34,19 @@ struct tss {
 	uint16_t ioperm_off; // 16-bit offset to IO permissions bitmap from base of TSS
 } __attribute__((packed));
 
-#ifndef __SHUOS_CFG_SMP__
-#define __SHUOS_CFG_MAX_NUM_TSS__ 1
+#ifndef __TMOS_CFG_SMP__
+#define __TMOS_CFG_MAX_NUM_TSS__ 1
 #else
-#define __SHUOS_CFG_MAX_NUM_TSS__ __SHUOS_CFG_MAX_NUM_CPUS__
+#define __TMOS_CFG_MAX_NUM_TSS__ __TMOS_CFG_MAX_NUM_CPUS__
 #endif
 
-#define __SHUOS_CFG_BYTES_PER_TSS__ 128
+#define __TMOS_CFG_BYTES_PER_TSS__ 128
 
 // Buffer for TSSes
-extern char __tss_buf[__SHUOS_CFG_MAX_NUM_TSS__ * __SHUOS_CFG_BYTES_PER_TSS__];
+extern char __tss_buf[__TMOS_CFG_MAX_NUM_TSS__ * __TMOS_CFG_BYTES_PER_TSS__];
 
 // Get pointer to nth TSS
 static inline struct tss* tss_get_n(uint32_t n) {
-	ASSERT(n < __SHUOS_CFG_MAX_NUM_TSS__);
-	return (struct tss*) (__tss_buf + (n * __SHUOS_CFG_BYTES_PER_TSS__));
+	ASSERT(n < __TMOS_CFG_MAX_NUM_TSS__);
+	return (struct tss*) (__tss_buf + (n * __TMOS_CFG_BYTES_PER_TSS__));
 }

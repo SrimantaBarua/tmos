@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <shuos/arch/cpu.h>
-#include <shuos/arch/idt.h>
-#include <shuos/arch/global_consts.h>
+#include <tmos/arch/cpu.h>
+#include <tmos/arch/idt.h>
+#include <tmos/arch/global_consts.h>
 
 // Paging and addresses
 #define PAGE_SIZE_SHIFT 12

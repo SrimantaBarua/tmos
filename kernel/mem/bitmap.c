@@ -1,10 +1,10 @@
 // (C) 2018 Srimanta Barua
 // Bitmap-based physical memory managers
 
-#include <shuos/klog.h>
-#include <shuos/memory.h>
+#include <tmos/klog.h>
+#include <tmos/memory.h>
 #include <string.h>
-#include <shuos/ds/bitmap.h>
+#include <tmos/ds/bitmap.h>
 
 // Bitmap-based physical memory manager
 struct bm_pmmgr {
@@ -94,7 +94,7 @@ static void _init(region_t *regions, uint32_t num_regions, paddr_t fast_start, p
 		PANIC("No space for bitmap in provided regions");
 	}
 	// Found
-#if defined(__SHUOS_CFG_ARCH_x86_64__) || defined(__SHUOS_CFG_ARCH_x86__)
+#if defined(__TMOS_CFG_ARCH_x86_64__) || defined(__TMOS_CFG_ARCH_x86__)
 	BM_INIT(_mgr.bm0, REGION_START(regions[bmreg]) + KRNL_VBASE, bm0_nbi);
 	BM_INIT(_mgr.bm1, REGION_START(regions[bmreg]) + KRNL_VBASE + BM_SZ(_mgr.bm0), bm1_nbi);
 #else
@@ -163,8 +163,8 @@ static void _free(paddr_t addr) {
 }
 
 // Remap the space taken by the bitmap
-#if defined(__SHUOS_CFG_ARCH_x86_64__)
-#include <shuos/arch/memory.h>
+#if defined(__TMOS_CFG_ARCH_x86_64__)
+#include <tmos/arch/memory.h>
 
 static void _remap_cb() {
 	uint64_t bm0sz, bm1sz, num;
@@ -182,7 +182,7 @@ struct pmmgr BM_PMMGR = {
 	.init = _init,
 	.alloc = _alloc,
 	.free = _free,
-#if defined(__SHUOS_CFG_ARCH_x86_64__)
+#if defined(__TMOS_CFG_ARCH_x86_64__)
 	.remap_cb = _remap_cb,
 #endif
 };

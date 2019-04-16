@@ -10,8 +10,6 @@
 void main() {
 	// Initialize the serial port interface
 	serial_init ();
-	// Log that we're starting up
-	log (LOG_INFO, "Shu's putting on her Boots..\n");
 	union region *regions = 0;
 	uint32_t num_regions = mem_load_regions (0x10000, &regions);
 

@@ -1,4 +1,4 @@
-The ShuOS bootloader
+The tmos bootloader
 --------------------
 
 Why write a custom bootloader? Well, why write a custom OS at all?

@@ -2,11 +2,11 @@
 //
 // Functionality for logging
 
-#include <shuos/klog.h>
-#include <shuos/serial.h>
-#include <shuos/vsprintf.h>
+#include <tmos/klog.h>
+#include <tmos/serial.h>
+#include <tmos/vsprintf.h>
 #include <stdbool.h>
-#include <shuos/spin.h>
+#include <tmos/spin.h>
 
 #ifndef KLOG_BUF_SZ
 #define KLOG_BUF_SZ 4096

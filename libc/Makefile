@@ -6,7 +6,7 @@ ARCH?=x86_64
 OPT?=-O2
 
 # Fixing compiler to GCC for now..
-CC:=$(ARCH)-shuos-gcc
+CC:=$(ARCH)-tmos-gcc
 
 # Compiler warnings
 WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs\
@@ -14,7 +14,7 @@ WARNINGS:=-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Wredundant-decls 
 
 # Compiler and linker flags
 CFLAGS:=$(OPT) $(WARN)
-CPPFLAGS:=-I../sysroot/usr/include/ -D__SHUOS_CFG_ARCH_$(ARCH)__
+CPPFLAGS:=-I../sysroot/usr/include/ -D__TMOS_CFG_ARCH_$(ARCH)__
 LDFLAGS:=-nostdlib
 LIBS:=
 
@@ -24,7 +24,7 @@ LDFLAGS.libc:=$(LDFLAGS)
 LIBS.libc:=$(LIBS)
 
 CFLAGS.libk:=$(CFLAGS) -ffreestanding
-CPPFLAGS.libk:=$(CPPFLAGS) -D__SHUOS_KERNEL__
+CPPFLAGS.libk:=$(CPPFLAGS) -D__TMOS_KERNEL__
 LDFLAGS.libk:=$(LDFLAGS)
 LIBS.libk:=$(LIBS)
 

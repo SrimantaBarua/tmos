@@ -4,7 +4,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <shuos/system.h>
+#include <tmos/system.h>
 
 // The type flags for ISRs
 #define IDT_ATTR_PRESENT 0x80

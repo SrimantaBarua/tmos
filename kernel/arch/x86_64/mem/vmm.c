@@ -1,14 +1,14 @@
 // (C) 2018 Srimanta Barua
 
-#include <shuos/system.h>
-#include <shuos/memory.h>
+#include <tmos/system.h>
+#include <tmos/memory.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
-#include <shuos/klog.h>
-#include <shuos/arch/memory.h>
-#include <shuos/arch/cpu.h>
-#include <shuos/arch/idt.h>
+#include <tmos/klog.h>
+#include <tmos/arch/memory.h>
+#include <tmos/arch/cpu.h>
+#include <tmos/arch/idt.h>
 
 // A page table
 struct ptable {

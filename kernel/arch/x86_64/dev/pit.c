@@ -2,11 +2,11 @@
 // Code for configuring the Programmable Interval Timer, and for the PIT
 // interrupt handler
 
-#include <shuos/arch/dev/pit.h>
-#include <shuos/arch/dev/pic.h>
-#include <shuos/arch/port_io.h>
-#include <shuos/arch/idt.h>
-#include <shuos/klog.h>
+#include <tmos/arch/dev/pit.h>
+#include <tmos/arch/dev/pic.h>
+#include <tmos/arch/port_io.h>
+#include <tmos/arch/idt.h>
+#include <tmos/klog.h>
 
 // PIT ports
 #define PIT_CHANNEL0  0x40

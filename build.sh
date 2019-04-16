@@ -4,7 +4,7 @@
 
 binutils_ver="2.31"
 gcc_ver="8.2.0"
-autoconf_ver="2.64"
+autoconf_ver="2.69"
 arch="x86_64"
 
 cores=$(grep processor /proc/cpuinfo | wc -l)
@@ -26,17 +26,17 @@ tools_cross_dir=$tools_dir/cross
 gnu_url="https://ftp.gnu.org/gnu"
 
 kernel_dir=$cur_dir/kernel
-kernel=shuos.kernel
+kernel=tmos.kernel
 
 libc_dir=$cur_dir/libc
 libc=$libc_dir/build_libc/libc.a
 crtobjs="$libc_dir/arch/$arch/crt/crt0.o $libc_dir/arch/$arch/crt/crti.o $libc_dir/arch/$arch/crt/crtn.o"
 
-iso=$cur_dir/shuos_kernel_test.iso
+iso=$cur_dir/tmos_kernel_test.iso
 
 serial_file=$cur_dir/serial.log
 
-TARGET=$arch-shuos
+TARGET=$arch-tmos
 PREFIX=$tools_cross_dir
 PATH=$tools_cross_dir/bin:$PATH
 
@@ -82,7 +82,7 @@ copy_headers() {
 	cd $cur_dir
 	if [ ! -d $include_dir ]; then
 		cp -R $cur_dir/include $include_dir
-		cd $include_dir/shuos
+		cd $include_dir/tmos
 		mv arch/$arch arch_$arch
 		rm -r arch
 		mv arch_$arch arch
@@ -236,9 +236,9 @@ iso() {
 	cat > $grub_dir/grub.cfg << EOF
 set timeout=0
 set default=0
-menuentry "shuos" {
+menuentry "tmos" {
 	insmod gzio
-	multiboot2 /boot/shuos.kernel.gz
+	multiboot2 /boot/tmos.kernel.gz
 	boot
 }
 EOF

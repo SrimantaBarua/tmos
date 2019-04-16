@@ -2,10 +2,10 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <shuos/system.h>
-#include <shuos/arch/idt.h>
-#include <shuos/arch/dev/pic.h>
-#include <shuos/klog.h>
+#include <tmos/system.h>
+#include <tmos/arch/idt.h>
+#include <tmos/arch/dev/pic.h>
+#include <tmos/klog.h>
 
 // Macro for an exception which does not push error code
 #define EXCEPT_NOERROR(i) \

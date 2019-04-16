@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <shuos/system.h>
+#include <tmos/system.h>
 
 // A spinlock
 typedef uint32_t spin_t;
@@ -12,7 +12,7 @@ typedef uint32_t spin_t;
 // Initialize a spinlock
 #define SPIN_UNLOCKED 0
 
-#ifndef __SHUOS_CFG_SMP__
+#ifndef __TMOS_CFG_SMP__
 
 // Acquire a spinlock
 static inline void spin_lock(spin_t *lock) {

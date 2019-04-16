@@ -3,8 +3,8 @@
 // Set up and carry out communication over serial connections
 
 #include <stdbool.h>
-#include <shuos/serial.h>
-#include <shuos/arch/port_io.h>
+#include <tmos/serial.h>
+#include <tmos/arch/port_io.h>
 
 // Registers
 #define DATA(base)         (base)

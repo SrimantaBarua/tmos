@@ -4,13 +4,13 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <shuos/static_assert.h>
+#include <tmos/static_assert.h>
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
 #define VERISON_PATCH 0
 
-#include <shuos/arch/system.h>
+#include <tmos/arch/system.h>
 
 // Utility math
 #define ROUND_UP(x, y) (((x) + ((y) - 1)) & ~((y) - 1))

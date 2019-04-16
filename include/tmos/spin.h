@@ -4,4 +4,4 @@
 
 #pragma once
 
-#include <shuos/arch/spin.h>
+#include <tmos/arch/spin.h>

@@ -6,7 +6,7 @@ index 6391f356..7dd64070 100644
      targ_selvecs=
      targ64_selvecs=x86_64_elf64_vec
      ;;
-+  i[3-7]86-*-shuos*)
++  i[3-7]86-*-tmos*)
 +    targ_defvec=i386_elf32_vec
 +    targ_selvecs=
 +    targ64_selvecs=x86_64_elf64_vec
@@ -18,7 +18,7 @@ index 6391f356..7dd64070 100644
      targ_selvecs=i386_elf32_vec
      want64=true
      ;;
-+  x86_64-*-shuos*)
++  x86_64-*-tmos*)
 +    targ_defvec=x86_64_elf64_vec
 +    targ_selvecs=i386_elf32_vec
 +    want64=true
@@ -35,7 +35,7 @@ index c95acc68..acb0c8a9 100755
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
  	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
 -	     | midnightbsd*)
-+	     | midnightbsd* | shuos*)
++	     | midnightbsd* | tmos*)
  	# Remember, each alternative MUST END IN *, to match a version number.
  		;;
  	qnx*)
@@ -47,7 +47,7 @@ index 3d0415c1..5e427c4b 100644
      esac ;;
    i386-*-lynxos*)			fmt=elf em=lynx ;;
    i386-*-redox*)			fmt=elf ;;
-+  i386-*-shuos*)			fmt=elf ;;
++  i386-*-tmos*)			fmt=elf ;;
    i386-*-solaris*)			fmt=elf em=solaris ;;
    i386-*-freebsd* \
    | i386-*-kfreebsd*-gnu)		fmt=elf em=freebsd ;;
@@ -59,9 +59,9 @@ index fad8b2e5..e08cf382 100644
  			targ_extra_emuls=elf_x86_64 ;;
  x86_64-*-redox*)	targ_emul=elf_x86_64
  			targ_extra_emuls=elf_i386 ;;
-+i[3-7]86-*-shuos*)	targ_emul=elf_i386
++i[3-7]86-*-tmos*)	targ_emul=elf_i386
 +			targ_extra_emuls=elf_x86_64 ;;
-+x86_64-*-shuos*)	targ_emul=elf_x86_64
++x86_64-*-tmos*)	targ_emul=elf_x86_64
 +			targ_extra_emuls=elf_i386 ;;
  i[3-7]86-*-sysv[45]*)	targ_emul=elf_i386
  			targ_extra_emuls=elf_iamcu ;;

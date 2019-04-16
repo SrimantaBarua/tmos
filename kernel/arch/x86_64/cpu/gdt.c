@@ -1,11 +1,11 @@
 // (C) 2018 Srimanta Barua
 
-#include <shuos/system.h>
-#include <shuos/arch/gdt.h>
-#include <shuos/arch/tss.h>
+#include <tmos/system.h>
+#include <tmos/arch/gdt.h>
+#include <tmos/arch/tss.h>
 
 // Buffer for GDT segments
-static uint64_t _buf[5 + (2 * __SHUOS_CFG_MAX_NUM_TSS__)] = { 0 };
+static uint64_t _buf[5 + (2 * __TMOS_CFG_MAX_NUM_TSS__)] = { 0 };
 
 // Index of next GDT segment
 static uint64_t _next;
@@ -42,7 +42,7 @@ void gdt_init() {
 	// Add user data segment
 	gdt_add_seg(USER_DATA_SEGMENT);
 	// For each core, add TSS
-	for (i = 0; i < __SHUOS_CFG_MAX_NUM_TSS__; i++) {
+	for (i = 0; i < __TMOS_CFG_MAX_NUM_TSS__; i++) {
 		tss = tss_get_n(i);
 		tss->ioperm_off = sizeof(struct tss);
 		gdt_add_tss(tss);

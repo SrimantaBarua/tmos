@@ -1,8 +1,8 @@
 // (C) 2018 Srimanta Barua
 
 #include <stddef.h>
-#include <shuos/multiboot2.h>
-#include <shuos/klog.h>
+#include <tmos/multiboot2.h>
+#include <tmos/klog.h>
 
 // Global pointer to multiboot table. Doesn't not need locking because it is only set once
 const struct mb2_table *MB2TAB = NULL;
@@ -43,7 +43,7 @@ const struct mb2_tag* mb2_get_tag(uint32_t type) {
 	return NULL;
 }
 
-#include <shuos/memory.h>
+#include <tmos/memory.h>
 
 #define MB2_MREG_TYPE(m) (((m).type == 0 || (m).type > 4) ? 2 : (m).type)
 #define MB2_MREG_END(m) ((m).start + (m).len)
